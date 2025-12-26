@@ -1,16 +1,15 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
 )
-
-const USERNAME = ""
-const PASSWORD = ""
-const SUBSONIC_DOMAIN = ""
 
 type SubsonicResponse struct {
 	Response struct {
@@ -54,12 +53,26 @@ type Playlist struct {
 	Name string `json:"name"`
 }
 
+func generateSalt() string {
+	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+	b := make([]byte, 6)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
 func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, error) {
-	baseUrl := "https://" + SUBSONIC_DOMAIN + "/rest" + endpoint
+	baseUrl := "https://" + AppConfig.Domain + "/rest" + endpoint
+
+	salt := generateSalt()
+	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}
-	v.Set("u", USERNAME)
-	v.Set("p", PASSWORD)
+	v.Set("u", AppConfig.Username)
+	v.Set("t", token)
+	v.Set("s", salt)
 	v.Set("v", "1.16.1")
 	v.Set("c", "depth")
 	v.Set("f", "json")
@@ -82,6 +95,20 @@ func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, 
 	}
 
 	return &result, nil
+}
+
+func subsonicPing() error {
+	data, err := subsonicGET("/ping", nil)
+	if err != nil {
+		return fmt.Errorf("network error: %v", err)
+	}
+
+	if data.Response.Status != "ok" {
+		return fmt.Errorf("authentication failed: server returned status %s", data.Response.Status)
+	}
+
+	fmt.Println("Connection successful! Welcome,", AppConfig.Username)
+	return nil
 }
 
 func subsonicSearchArtist(query string, page int) {
