@@ -1,0 +1,3 @@
+# DepthTUI
+
+Subsonic TUI client
