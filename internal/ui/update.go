@@ -22,167 +22,62 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 
-		// Tab Cycles Focus: Search -> Sidebar -> Main -> Song -> Search
 		case "tab":
-			m.focus = (m.focus + 1) % 4
-			if m.focus == focusSearch {
-				m.textInput.Focus()
-			} else {
-				m.textInput.Blur()
-			}
+			m = cycleFocus(m, true)
+
 		case "shift+tab":
-			m.focus = (((m.focus-1)%4 + 4) % 4)
-			if m.focus == focusSearch {
-				m.textInput.Focus()
-			} else {
-				m.textInput.Blur()
-			}
+			m = cycleFocus(m, false)
+
 		case "enter":
-			if m.focus == focusSearch {
-				query := m.textInput.Value()
-				if query != "" {
-					m.loading = true
-					m.focus = focusMain
-					m.viewMode = viewList
-					m.textInput.Blur()
-					m.songs = nil
-					m.albums = nil
-					m.artists = nil
+			return enter(m)
 
-					// PASS THE FILTER MODE HERE
-					return m, searchCmd(query, m.filterMode)
-				}
-			} else if m.focus == focusMain {
-				if m.viewMode == viewList {
-					// List View: Load list into queue
-					if len(m.songs) > 0 {
-						return m, m.setQueue(m.songs, m.cursorMain)
-					}
-				} else {
-					// Queue View: Jump to selected song
-					if len(m.queue) > 0 {
-						return m, m.playQueueIndex(m.cursorMain)
-					}
-				}
-			} else if m.focus == focusSidebar {
-				// Open playlist
-				m.loading = true
-				m.focus = focusMain
-				m.viewMode = viewList
-				return m, getPlaylistSongs((m.playlists[m.cursorSide]).ID)
-			}
+		case "up", "k":
+			m = navigateUp(m)
 
-		case "up", "k": // Navigation up
-			if m.focus == focusMain && m.cursorMain > 0 {
-				m.cursorMain--
-				if m.cursorMain < m.mainOffset {
-					m.mainOffset = m.cursorMain
-				}
-			} else if m.focus == focusSidebar && m.cursorSide > 0 {
-				m.cursorSide--
-			}
+		case "down", "j":
+			m = navigateDown(m)
 
-		case "down", "j": // Navigation down
-			if m.focus == focusMain && m.cursorMain < len(m.songs)-1 {
-				m.cursorMain++
-
-				// Height - Search(3) - Footer(6) - Margins(4) - TableHeader(2)
-				visibleRows := m.height - 17
-
-				if m.cursorMain >= m.mainOffset+visibleRows {
-					m.mainOffset++
-				}
-			} else if m.focus == focusSidebar && m.cursorSide < len(m.playlists)-1 {
-				m.cursorSide++
-			}
 		case "ctrl+n":
-			// Switch filter
-			if m.focus == focusSearch {
-				m.filterMode = (m.filterMode + 1) % 3
-			}
+			m = cycleFilter(m, true)
+
 		case "ctrl+b":
-			// Switch filter
-			if m.focus == focusSearch {
-				m.filterMode = ((m.filterMode-1)%3 + 3) % 3 // Handle going negative
-			}
+			m = cycleFilter(m, false)
+
 		case "Q":
-			if m.focus != focusSearch {
+			m = toggleQueue(m)
 
-				if m.viewMode == viewList {
-					m.viewMode = viewQueue
-					m.cursorMain = m.queueIndex
-					if m.cursorMain > 2 {
-						m.mainOffset = m.cursorMain - 2
-					} else {
-						m.mainOffset = 0
-					}
-				} else {
-					m.viewMode = viewList
-					m.cursorMain = 0
-					m.mainOffset = 0
-				}
-			}
+		case "p":
+			m = mediaTogglePlay(m)
 
-		case "p": // Play/pause
-			if m.focus != focusSearch {
-				player.TogglePause()
-			}
+		case "n":
+			return mediaSongSkip(m)
 
-		case "n": // Next song
-			if m.focus != focusSearch {
-				return m, m.playNext()
-			}
-		case "b": // Previous song
-			if m.focus != focusSearch {
-				return m, m.playPrev()
-			}
-		case "N": // Play next
-			if m.focus == focusMain {
-				selectedSong := m.songs[m.cursorMain]
+		case "b":
+			return mediaSongPrev(m)
 
-				if len(m.queue) == 0 {
-					m.queue = []api.Song{selectedSong}
-					m.queueIndex = 0
-				} else {
-					insertAt := m.queueIndex + 1
-					tail := append([]api.Song{}, m.queue[insertAt:]...)
-					m.queue = append(m.queue[:insertAt], append([]api.Song{selectedSong}, tail...)...)
-				}
-			}
-		case "a": // Add to queue
-			if m.focus == focusMain {
-				m.queue = append(m.queue, m.songs[m.cursorMain])
-			}
-		case "d": // Delete from queue
-			if m.focus == focusMain {
-				m.queue = append(m.queue[:m.queueIndex], m.queue[m.queueIndex+1:]...)
-			}
-		case "D": // Clear queue
-			if m.focus == focusMain {
-				m.queue = nil
-			}
-		case "ctrl+k": // Move up in queue
-			if m.focus == focusMain {
-				tempSong := m.queue[m.cursorMain]
+		case "N":
+			m = mediaAddSongNext(m)
 
-				m.queue[m.cursorMain] = m.queue[m.cursorMain-1]
-				m.queue[m.cursorMain-1] = tempSong
-			}
-		case "ctrl+j": // Move down in queue
-			if m.focus == focusMain {
-				tempSong := m.queue[m.cursorMain]
+		case "a":
+			m = mediaAddSongToQueue(m)
 
-				m.queue[m.cursorMain] = m.queue[m.cursorMain+1]
-				m.queue[m.cursorMain+1] = tempSong
-			}
-		case ",": // -10sec
-			if m.focus != focusSearch {
-				player.Back10Seconds()
-			}
-		case ";": // +10sec
-			if m.focus != focusSearch {
-				player.Forward10Seconds()
-			}
+		case "d":
+			m = mediaDeleteSongFromQueue(m)
+
+		case "D":
+			m = mediaDeleteQueue(m)
+
+		case "ctrl+k":
+			m = mediaSongUpQueue(m)
+
+		case "ctrl+j":
+			m = mediaSongDownQueue(m)
+
+		case ",":
+			m = mediaSeekForward(m)
+
+		case ";":
+			m = mediaSeekRewind(m)
 		}
 
 	case playlistResultMsg:
@@ -240,4 +135,267 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, cmd
+}
+
+// Cycles Focus: Search -> Sidebar -> Main -> Song -> Search
+func cycleFocus(m model, forward bool) model {
+	if forward {
+		m.focus = (m.focus + 1) % 4
+	} else {
+		m.focus = (((m.focus-1)%4 + 4) % 4)
+	}
+
+	if m.focus == focusSearch {
+		m.textInput.Focus()
+	} else {
+		m.textInput.Blur()
+	}
+
+	return m
+}
+
+func enter(m model) (tea.Model, tea.Cmd) {
+	if m.focus == focusSearch {
+		query := m.textInput.Value()
+		if query != "" {
+			m.loading = true
+			m.focus = focusMain
+			m.viewMode = viewList
+			m.textInput.Blur()
+			m.songs = nil
+			m.albums = nil
+			m.artists = nil
+
+			return m, searchCmd(query, m.filterMode)
+		}
+	} else if m.focus == focusMain {
+		if m.viewMode == viewList {
+			switch m.filterMode {
+			// Play song
+			case filterSongs:
+				if len(m.songs) > 0 {
+					return m, m.setQueue(m.songs, m.cursorMain)
+				}
+
+			// Open songs in album
+			case filterAlbums:
+				if len(m.albums) > 0 {
+					selectedAlbum := m.albums[m.cursorMain]
+					m.loading = true
+					m.filterMode = filterSongs
+					m.songs = nil
+
+					return m, getAlbumSongs(selectedAlbum.ID)
+				}
+
+			// Open albums of artist
+			case filterArtist:
+				if len(m.artists) > 0 {
+					selectedArtist := m.artists[m.cursorMain]
+					m.loading = true
+					m.filterMode = filterAlbums
+					m.albums = nil
+
+					return m, getArtistAlbums(selectedArtist.ID)
+				}
+			}
+
+		} else {
+			// Queue View: Jump to selected song
+			if len(m.queue) > 0 {
+				return m, m.playQueueIndex(m.cursorMain)
+			}
+		}
+	} else if m.focus == focusSidebar {
+		m.loading = true
+		m.focus = focusMain
+		m.viewMode = viewList
+		m.filterMode = filterSongs
+		return m, getPlaylistSongs((m.playlists[m.cursorSide]).ID)
+	}
+
+	return m, nil
+}
+func navigateUp(m model) model {
+	if m.focus == focusMain && m.cursorMain > 0 {
+		m.cursorMain--
+		if m.cursorMain < m.mainOffset {
+			m.mainOffset = m.cursorMain
+		}
+	} else if m.focus == focusSidebar && m.cursorSide > 0 {
+		m.cursorSide--
+	}
+
+	return m
+}
+
+func navigateDown(m model) model {
+	listLen := 0
+	if m.viewMode == viewQueue {
+		listLen = len(m.queue)
+	} else if m.filterMode == filterSongs {
+		listLen = len(m.songs)
+	} else if m.filterMode == filterAlbums {
+		listLen = len(m.albums)
+	} else if m.filterMode == filterArtist {
+		listLen = len(m.artists)
+	}
+
+	if m.focus == focusMain && m.cursorMain < listLen-1 {
+		m.cursorMain++
+
+		// Height - Search(3) - Footer(6) - Margins(4) - TableHeader(2) = 17
+		visibleRows := m.height - 17
+		if m.cursorMain >= m.mainOffset+visibleRows {
+			m.mainOffset++
+		}
+	} else if m.focus == focusSidebar && m.cursorSide < len(m.playlists)-1 {
+		m.cursorSide++
+	}
+
+	return m
+}
+
+func cycleFilter(m model, forward bool) model {
+	if m.focus == focusSearch {
+		if forward {
+			m.filterMode = (m.filterMode + 1) % 3
+		} else {
+			m.filterMode = ((m.filterMode-1)%3 + 3) % 3
+		}
+	}
+
+	return m
+}
+
+func toggleQueue(m model) model {
+	if m.focus != focusSearch {
+
+		if m.viewMode == viewList {
+			m.viewMode = viewQueue
+			m.cursorMain = m.queueIndex
+			if m.cursorMain > 2 {
+				m.mainOffset = m.cursorMain - 2
+			} else {
+				m.mainOffset = 0
+			}
+		} else {
+			m.viewMode = viewList
+			m.cursorMain = 0
+			m.mainOffset = 0
+		}
+	}
+
+	return m
+}
+
+func mediaTogglePlay(m model) model {
+	if m.focus != focusSearch {
+		player.TogglePause()
+	}
+
+	return m
+}
+
+func mediaSongSkip(m model) (tea.Model, tea.Cmd) {
+	if m.focus != focusSearch {
+		return m, m.playNext()
+	}
+
+	return m, nil
+}
+
+func mediaSongPrev(m model) (tea.Model, tea.Cmd) {
+	if m.focus != focusSearch {
+		return m, m.playPrev()
+	}
+
+	return m, nil
+}
+
+func mediaAddSongNext(m model) model {
+	if m.focus == focusMain {
+		selectedSong := m.songs[m.cursorMain]
+
+		if len(m.queue) == 0 {
+			m.queue = []api.Song{selectedSong}
+			m.queueIndex = 0
+		} else {
+			insertAt := m.queueIndex + 1
+			tail := append([]api.Song{}, m.queue[insertAt:]...)
+			m.queue = append(m.queue[:insertAt], append([]api.Song{selectedSong}, tail...)...)
+		}
+	}
+
+	return m
+}
+
+func mediaAddSongToQueue(m model) model {
+	if m.focus == focusMain {
+		m.queue = append(m.queue, m.songs[m.cursorMain])
+	}
+
+	return m
+}
+
+func mediaDeleteSongFromQueue(m model) model {
+	if m.focus == focusMain && m.viewMode == viewQueue && len(m.queue) > 0 {
+		m.queue = append(m.queue[:m.queueIndex], m.queue[m.queueIndex+1:]...)
+	}
+
+	if m.cursorMain >= len(m.queue) && m.cursorMain > 0 {
+		m.cursorMain--
+	}
+
+	return m
+}
+
+func mediaDeleteQueue(m model) model {
+	if m.focus == focusMain {
+		m.queue = nil
+	}
+
+	return m
+}
+
+func mediaSongUpQueue(m model) model {
+	if m.focus == focusMain && m.viewMode == viewQueue && m.cursorMain > 0 {
+		tempSong := m.queue[m.cursorMain]
+
+		m.queue[m.cursorMain] = m.queue[m.cursorMain-1]
+		m.queue[m.cursorMain-1] = tempSong
+
+		m.cursorMain--
+	}
+
+	return m
+}
+
+func mediaSongDownQueue(m model) model {
+	if m.focus == focusMain && m.viewMode == viewQueue && m.cursorMain < len(m.queue)-1 {
+		tempSong := m.queue[m.cursorMain]
+
+		m.queue[m.cursorMain] = m.queue[m.cursorMain+1]
+		m.queue[m.cursorMain+1] = tempSong
+
+		m.cursorMain++
+	}
+
+	return m
+}
+
+func mediaSeekForward(m model) model {
+	if m.focus != focusSearch {
+		player.Back10Seconds()
+	}
+
+	return m
+}
+
+func mediaSeekRewind(m model) model {
+	if m.focus != focusSearch {
+		player.Forward10Seconds()
+	}
+
+	return m
 }

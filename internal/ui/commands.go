@@ -39,6 +39,27 @@ func searchCmd(query string, mode int) tea.Cmd {
 		return nil
 	}
 }
+
+func getAlbumSongs(albumID string) tea.Cmd {
+	return func() tea.Msg {
+		songs, err := api.SubsonicGetAlbum(albumID)
+		if err != nil {
+			return errMsg{err}
+		}
+		return songsResultMsg{songs}
+	}
+}
+
+func getArtistAlbums(artistID string) tea.Cmd {
+	return func() tea.Msg {
+		albums, err := api.SubsonicGetArtist(artistID)
+		if err != nil {
+			return errMsg{err}
+		}
+		return albumsResultMsg{albums}
+	}
+}
+
 func getPlaylists() tea.Cmd {
 	return func() tea.Msg {
 		playlists, err := api.SubsonicGetPlaylists()

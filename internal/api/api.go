@@ -14,18 +14,20 @@ import (
 
 type SubsonicResponse struct {
 	Response struct {
-		Status       string `json:"status"`
-		SearchResult struct {
-			Artists []Artist `json:"artist"`
-			Albums  []Album  `json:"album"`
-			Songs   []Song   `json:"song"`
-		} `json:"searchResult3"`
+		Status            string        `json:"status"`
+		SearchResult      SearchResult3 `json:"searchResult3"`
 		PlaylistContainer struct {
 			Playlists []Playlist `json:"playlist"`
 		} `json:"playlists"`
 		PlaylistDetail struct {
 			Entries []Song `json:"entry"`
 		} `json:"playlist"`
+		Album struct {
+			Songs []Song `json:"song"`
+		} `json:"album"`
+		Artist struct {
+			Albums []Album `json:"album"`
+		} `json:"artist"`
 	} `json:"subsonic-response"`
 }
 
@@ -196,6 +198,32 @@ func SubsonicGetPlaylists() ([]Playlist, error) {
 	}
 
 	return data.Response.PlaylistContainer.Playlists, nil
+}
+
+func SubsonicGetAlbum(id string) ([]Song, error) {
+	params := map[string]string{
+		"id": id,
+	}
+
+	data, err := subsonicGET("/getAlbum", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return data.Response.Album.Songs, nil
+}
+
+func SubsonicGetArtist(id string) ([]Album, error) {
+	params := map[string]string{
+		"id": id,
+	}
+
+	data, err := subsonicGET("/getArtist", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return data.Response.Artist.Albums, nil
 }
 
 func SubsonicStream(id string) string {
