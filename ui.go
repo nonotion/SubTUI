@@ -17,6 +17,11 @@ const (
 	focusSong
 )
 
+const (
+	viewList = iota
+	viewQueue
+)
+
 var (
 	// Colors
 	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
@@ -52,6 +57,9 @@ type model struct {
 	width  int
 	height int
 
+	// View Mode
+	viewMode int
+
 	// App State
 	err            error
 	loading        bool
@@ -75,6 +83,7 @@ func initialModel() model {
 		focus:      focusSearch,
 		cursorMain: 0,
 		cursorSide: 0,
+		viewMode:   viewList,
 	}
 }
 
@@ -122,16 +131,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, searchSongsCmd(query)
 				}
 			} else if m.focus == focusMain {
-				// Play Song
-				if len(m.songs) > 0 {
-					return m, m.setQueue(m.songs, m.cursorMain)
+				if m.viewMode == viewList {
+					// List View: Load list into queue
+					if len(m.songs) > 0 {
+						return m, m.setQueue(m.songs, m.cursorMain)
+					}
+				} else {
+					// Queue View: Jump to selected song
+					if len(m.queue) > 0 {
+						return m, m.playQueueIndex(m.cursorMain)
+					}
 				}
 			} else if m.focus == focusSidebar {
 				// Open playlist
 				m.loading = true
 				m.focus = focusMain
+				m.viewMode = viewList
 				return m, getPlaylistSongs((m.playlists[m.cursorSide]).ID)
 			}
+
 		case "up", "k": // Navigation up
 			if m.focus == focusMain && m.cursorMain > 0 {
 				m.cursorMain--
@@ -141,6 +159,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.focus == focusSidebar && m.cursorSide > 0 {
 				m.cursorSide--
 			}
+
 		case "down", "j": // Navigation down
 			if m.focus == focusMain && m.cursorMain < len(m.songs)-1 {
 				m.cursorMain++
@@ -154,10 +173,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.focus == focusSidebar && m.cursorSide < len(m.playlists)-1 {
 				m.cursorSide++
 			}
+
+		case "Q":
+			if m.viewMode == viewList {
+				m.viewMode = viewQueue
+				m.cursorMain = m.queueIndex
+				if m.cursorMain > 2 {
+					m.mainOffset = m.cursorMain - 2
+				} else {
+					m.mainOffset = 0
+				}
+			} else {
+				m.viewMode = viewList
+				m.cursorMain = 0
+				m.mainOffset = 0
+			}
+
 		case "p": // Play/pause
 			if m.focus != focusSearch {
 				togglePause()
 			}
+
 		case "n": // Next
 			return m, m.playNext()
 
@@ -171,6 +207,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.cursorMain = 0
 		m.mainOffset = 0
 		m.focus = focusMain
+		m.viewMode = viewList
 		m.textInput.Blur()
 
 	case playlistResultMsg:
@@ -260,9 +297,20 @@ func (m model) View() string {
 	}
 
 	mainContent := ""
+
+	var targetList []Song
+	headerTitle := "TITLE"
+
+	if m.viewMode == viewQueue {
+		targetList = m.queue
+		headerTitle = fmt.Sprintf("QUEUE (%d/%d)", m.queueIndex+1, len(m.queue))
+	} else {
+		targetList = m.songs
+	}
+
 	if m.loading {
 		mainContent = "\n  Searching your library..."
-	} else if len(m.songs) == 0 {
+	} else if len(targetList) == 0 {
 		mainContent = "\n  Use the search bar to find music."
 	} else {
 		availableWidth := mainWidth - 4
@@ -273,7 +321,7 @@ func (m model) View() string {
 
 		headerStyle := lipgloss.NewStyle().Bold(true).Foreground(subtle)
 		header := fmt.Sprintf("  %-*s %-*s %-*s %s",
-			colTitle, "TITLE",
+			colTitle, headerTitle,
 			colArtist, "ARTIST",
 			colAlbum, "ALBUM",
 			"TIME")
@@ -310,6 +358,15 @@ func (m model) View() string {
 					style = style.Foreground(highlight).Bold(true)
 				} else {
 					style = style.Foreground(subtle)
+				}
+			}
+
+			if m.viewMode == viewQueue && i == m.queueIndex {
+				style = style.Foreground(special)
+				if m.cursorMain == i {
+					cursor = "> "
+				} else {
+					cursor = "  "
 				}
 			}
 
