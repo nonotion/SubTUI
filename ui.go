@@ -56,6 +56,10 @@ type model struct {
 	err            error
 	loading        bool
 	playlistAmount int
+
+	// Queue System
+	queue      []Song
+	queueIndex int
 }
 
 func initialModel() model {
@@ -120,8 +124,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.focus == focusMain {
 				// Play Song
 				if len(m.songs) > 0 {
-					selected := m.songs[m.cursorMain]
-					go playSong(selected.ID)
+					return m, m.setQueue(m.songs, m.cursorMain)
 				}
 			} else if m.focus == focusSidebar {
 				// Open playlist
@@ -155,6 +158,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focus != focusSearch {
 				togglePause()
 			}
+		case "n": // Next
+			return m, m.playNext()
+
+		case "b": // Previous
+			return m, m.playPrev()
 		}
 
 	case songsResultMsg:
@@ -174,6 +182,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case statusMsg:
 		m.playerStatus = PlayerStatus(msg)
+		if m.playerStatus.Duration > 0 &&
+			m.playerStatus.Current >= m.playerStatus.Duration-1 &&
+			!m.playerStatus.Paused {
+
+			return m, tea.Batch(
+				m.playNext(),
+				syncPlayerCmd(),
+			)
+		}
+
 		return m, syncPlayerCmd()
 	}
 
