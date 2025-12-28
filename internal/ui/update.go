@@ -389,6 +389,15 @@ func cycleFilter(m model, forward bool) model {
 		} else {
 			m.filterMode = ((m.filterMode-1)%3 + 3) % 3
 		}
+
+		switch m.filterMode {
+		case filterSongs:
+			m.textInput.Placeholder = "Search songs..."
+		case filterAlbums:
+			m.textInput.Placeholder = "Search albums..."
+		case filterArtist:
+			m.textInput.Placeholder = "Search artists..."
+		}
 	}
 
 	return m
