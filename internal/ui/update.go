@@ -20,7 +20,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
-			return quit(m)
+			return quit(m, msg)
 
 		case "tab":
 			m = cycleFocus(m, true)
@@ -50,10 +50,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m = mediaTogglePlay(m)
 
 		case "n":
-			return mediaSongSkip(m)
+			return mediaSongSkip(m, msg)
 
 		case "b":
-			return mediaSongPrev(m)
+			return mediaSongPrev(m, msg)
 
 		case "N":
 			m = mediaAddSongNext(m)
@@ -80,7 +80,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m = mediaSeekRewind(m)
 
 		case "F":
-			return mediaToggleFavorite(m)
+			return mediaToggleFavorite(m, msg)
 		}
 
 	case playlistResultMsg:
@@ -146,18 +146,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Update inputs
 	if m.focus == focusSearch {
-		m.textInput, cmd = m.textInput.Update(msg)
+		m, cmd = typeInput(m, msg)
 	}
 
 	return m, cmd
 }
 
-func quit(m model) (tea.Model, tea.Cmd) {
+func typeInput(m model, msg tea.Msg) (model, tea.Cmd) {
+	var cmd tea.Cmd
+	m.textInput, cmd = m.textInput.Update(msg)
+	return m, cmd
+}
+
+func quit(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.focus != focusSearch {
 		return m, tea.Quit
+	} else {
+		return typeInput(m, msg)
 	}
-
-	return m, nil
 }
 
 // Cycles Focus: Search -> Sidebar -> Main -> Song -> Search
@@ -320,20 +326,20 @@ func mediaTogglePlay(m model) model {
 	return m
 }
 
-func mediaSongSkip(m model) (tea.Model, tea.Cmd) {
+func mediaSongSkip(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.focus != focusSearch {
 		return m, m.playNext()
+	} else {
+		return typeInput(m, msg)
 	}
-
-	return m, nil
 }
 
-func mediaSongPrev(m model) (tea.Model, tea.Cmd) {
+func mediaSongPrev(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.focus != focusSearch {
 		return m, m.playPrev()
+	} else {
+		return typeInput(m, msg)
 	}
-
-	return m, nil
 }
 
 func mediaAddSongNext(m model) model {
@@ -423,9 +429,9 @@ func mediaSeekRewind(m model) model {
 	return m
 }
 
-func mediaToggleFavorite(m model) (model, tea.Cmd) {
+func mediaToggleFavorite(m model, msg tea.Msg) (model, tea.Cmd) {
 	if m.focus == focusSearch {
-		return m, nil
+		return typeInput(m, msg)
 	}
 
 	id := ""
