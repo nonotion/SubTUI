@@ -382,11 +382,11 @@ func navigateDown(m model) model {
 	listLen := 0
 	if m.viewMode == viewQueue {
 		listLen = len(m.queue)
-	} else if m.filterMode == filterSongs {
+	} else if m.displayMode == displaySongs {
 		listLen = len(m.songs)
-	} else if m.filterMode == filterAlbums {
+	} else if m.displayMode == displayAlbums {
 		listLen = len(m.albums)
-	} else if m.filterMode == filterArtist {
+	} else if m.displayMode == displayArtist {
 		listLen = len(m.artists)
 	}
 
