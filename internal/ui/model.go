@@ -67,9 +67,10 @@ type model struct {
 	filterMode int
 
 	// App State
-	err            error
-	loading        bool
-	playlistAmount int
+	err              error
+	loading          bool
+	playlistAmount   int
+	lastPlayedSongID string
 
 	// Queue System
 	queue      []api.Song
@@ -113,14 +114,15 @@ func InitialModel() model {
 	ti.Width = 50
 
 	return model{
-		textInput:  ti,
-		songs:      []api.Song{},
-		focus:      focusSearch,
-		cursorMain: 0,
-		cursorSide: 0,
-		viewMode:   viewList,
-		filterMode: filterSongs,
-		starredMap: make(map[string]bool),
+		textInput:        ti,
+		songs:            []api.Song{},
+		focus:            focusSearch,
+		cursorMain:       0,
+		cursorSide:       0,
+		viewMode:         viewList,
+		filterMode:       filterSongs,
+		starredMap:       make(map[string]bool),
+		lastPlayedSongID: "",
 	}
 }
 

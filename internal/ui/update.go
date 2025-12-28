@@ -1,9 +1,12 @@
 package ui
 
 import (
+	"fmt"
+
 	"git.punjwani.pm/Mattia/DepthTUI/internal/api"
 	"git.punjwani.pm/Mattia/DepthTUI/internal/player"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/gen2brain/beeep"
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -91,6 +94,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err = msg.err
 
 	case statusMsg:
+		if len(m.queue) > 0 {
+			currentSong := m.queue[m.queueIndex]
+
+			if currentSong.ID != m.lastPlayedSongID {
+
+				m.lastPlayedSongID = currentSong.ID
+
+				title := "DepthTUI"
+				description := fmt.Sprintf("Playing %s - %s", currentSong.Title, currentSong.Artist)
+				beeep.Notify(title, description, "")
+			}
+		}
+
 		m.playerStatus = player.PlayerStatus(msg)
 		if m.playerStatus.Duration > 0 &&
 			m.playerStatus.Current >= m.playerStatus.Duration-1 &&
