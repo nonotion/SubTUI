@@ -77,7 +77,7 @@ func generateSalt() string {
 }
 
 func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, error) {
-	baseUrl := "https://" + AppConfig.Domain + "/rest" + endpoint
+	baseUrl := AppConfig.URL + "/rest" + endpoint
 
 	salt := generateSalt()
 	hash := md5.Sum([]byte(AppConfig.Password + salt))
@@ -261,7 +261,7 @@ func SubsonicGetStarred() (*SearchResult3, error) {
 }
 
 func SubsonicStream(id string) string {
-	baseUrl := "https://" + AppConfig.Domain + "/rest/stream"
+	baseUrl := AppConfig.URL + "/rest/stream"
 
 	salt := generateSalt()
 	hash := md5.Sum([]byte(AppConfig.Password + salt))
@@ -295,7 +295,7 @@ func SubsonicScrobble(id string, submission bool) {
 }
 
 func SubsonicCoverArt(id string) ([]byte, error) {
-	baseUrl := "https://" + AppConfig.Domain + "/rest/getCoverArt"
+	baseUrl := AppConfig.URL + "/rest/getCoverArt"
 
 	salt := generateSalt()
 	hash := md5.Sum([]byte(AppConfig.Password + salt))

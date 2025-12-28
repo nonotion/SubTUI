@@ -683,7 +683,7 @@ func login(m model, msg tea.Msg) (model, tea.Cmd) {
 			if s == "enter" && m.loginFocus == len(m.loginInputs)-1 {
 				m.loading = true
 
-				api.AppConfig.Domain = m.loginInputs[0].Value()
+				api.AppConfig.URL = m.loginInputs[0].Value()
 				api.AppConfig.Username = m.loginInputs[1].Value()
 				api.AppConfig.Password = m.loginInputs[2].Value()
 

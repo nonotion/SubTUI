@@ -153,7 +153,7 @@ func InitialModel() model {
 	ti.Width = 50
 
 	startMode := viewList
-	if api.AppConfig.Username == "" || api.AppConfig.Domain == "" {
+	if api.AppConfig.Username == "" || api.AppConfig.Password == "" || api.AppConfig.URL == "" {
 		startMode = viewLogin
 	}
 
@@ -185,10 +185,10 @@ func initialLoginInputs() []textinput.Model {
 	inputs := make([]textinput.Model, 3)
 
 	inputs[0] = textinput.New()
-	inputs[0].Placeholder = "music.example.com"
+	inputs[0].Placeholder = "http(s)://music.example.com"
 	inputs[0].Width = 30
 	inputs[0].Focus()
-	inputs[0].Prompt = "Domain:   "
+	inputs[0].Prompt = "URL:      "
 
 	inputs[1] = textinput.New()
 	inputs[1].Placeholder = "username"

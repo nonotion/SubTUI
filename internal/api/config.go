@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
-	Domain   string `yaml:"domain"`
+	URL      string `yaml:"URL"`
 }
 
 var AppConfig Config
