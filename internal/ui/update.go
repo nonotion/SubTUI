@@ -120,12 +120,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			currentSong := m.queue[m.queueIndex]
 
 			if currentSong.ID != m.lastPlayedSongID {
-
 				m.lastPlayedSongID = currentSong.ID
 
-				title := "DepthTUI"
-				description := fmt.Sprintf("Playing %s - %s", currentSong.Title, currentSong.Artist)
-				beeep.Notify(title, description, "")
+				go func() {
+					artBytes, err := api.SubsonicCoverArt(currentSong.ID)
+
+					title := "DepthTUI"
+					description := fmt.Sprintf("Playing %s - %s", currentSong.Title, currentSong.Artist)
+
+					if err != nil {
+						beeep.Notify(title, description, "")
+					} else {
+						beeep.Notify(title, description, artBytes)
+					}
+				}()
 			}
 		}
 

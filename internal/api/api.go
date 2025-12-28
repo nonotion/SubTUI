@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -291,4 +292,37 @@ func SubsonicScrobble(id string, submission bool) {
 	}
 
 	subsonicGET("/scrobble", params)
+}
+
+func SubsonicCoverArt(id string) ([]byte, error) {
+	baseUrl := "https://" + AppConfig.Domain + "/rest/getCoverArt"
+
+	salt := generateSalt()
+	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	token := hex.EncodeToString(hash[:])
+
+	v := url.Values{}
+	v.Set("id", id)
+	v.Set("size", "50")
+	v.Set("u", AppConfig.Username)
+	v.Set("t", token)
+	v.Set("s", salt)
+	v.Set("v", "1.16.1")
+	v.Set("c", "DepthTUI")
+	v.Set("f", "json")
+
+	url := baseUrl + "?" + v.Encode()
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
