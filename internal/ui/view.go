@@ -6,6 +6,7 @@ import (
 
 	"git.punjwani.pm/Mattia/SubTUI/internal/api"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 )
 
 func (m model) View() string {
@@ -103,6 +104,31 @@ func truncate(s string, w int) string {
 		return s[:w-1] + "…"
 	}
 	return s
+}
+
+func LimitString(s string, limit int) string {
+	width := runewidth.StringWidth(s)
+
+	if width <= limit {
+		padding := strings.Repeat(" ", limit-width)
+		return s + padding
+	}
+
+	curWidth := 0
+	res := ""
+
+	for _, r := range s {
+		w := runewidth.RuneWidth(r)
+
+		if curWidth+w > limit {
+			break
+		}
+
+		res += string(r)
+		curWidth += w
+	}
+
+	return res + strings.Repeat(" ", limit-curWidth)
 }
 
 func loginView(m model) string {
@@ -205,11 +231,12 @@ func mainSongsContent(m model, mainWidth int, mainHeight int) string {
 	// Time takes whatever is left
 
 	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(subtle)
-	header := fmt.Sprintf("  %-*s %-*s %-*s %s",
-		colTitle, mainTableHeader,
-		colArtist, "ARTIST",
-		colAlbum, "ALBUM",
-		"TIME")
+	header := fmt.Sprintf("  %s %s %s %s",
+		LimitString(mainTableHeader, colTitle),
+		LimitString("ARTIST", colArtist),
+		LimitString("ALBUM", colAlbum),
+		"TIME",
+	)
 
 	mainContent = headerStyle.Render(header) + "\n"
 	mainContent += lipgloss.NewStyle().Foreground(subtle).Render("  "+strings.Repeat("-", mainWidth-4)) + "\n"
@@ -256,14 +283,14 @@ func mainSongsContent(m model, mainWidth int, mainHeight int) string {
 
 		starIcon := " "
 		if m.starredMap[song.ID] {
-			starIcon = lipgloss.NewStyle().Render("♥︎")
+			starIcon = "♥"
 		}
 
-		row := fmt.Sprintf("%s %-*s %-*s %-*s %s",
+		row := fmt.Sprintf("%s %s %s %s %s",
 			starIcon,
-			colTitle, truncate(song.Title, colTitle),
-			colArtist, truncate(song.Artist, colArtist),
-			colAlbum, truncate(song.Album, colAlbum),
+			LimitString(song.Title, colTitle-2),
+			LimitString(song.Artist, colArtist),
+			LimitString(song.Album, colAlbum),
 			formatDuration(song.Duration),
 		)
 
@@ -282,9 +309,9 @@ func mainAlbumsContent(m model, mainWidth int, mainHeight int) string {
 	colAlbum := int(float64(availableWidth) * 0.5)
 	colArtist := int(float64(availableWidth) * 0.5)
 	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(subtle)
-	header := fmt.Sprintf("  %-*s %-*s",
-		colAlbum, "ALBUM",
-		colArtist, "ARTIST",
+	header := fmt.Sprintf("  %s %s",
+		LimitString("ALBUM", colAlbum),
+		LimitString("ARTIST", colArtist),
 	)
 
 	mainContent := headerStyle.Render(header) + "\n"
@@ -323,13 +350,13 @@ func mainAlbumsContent(m model, mainWidth int, mainHeight int) string {
 
 		starIcon := " "
 		if m.starredMap[album.ID] {
-			starIcon = lipgloss.NewStyle().Render("♥︎")
+			starIcon = "♥"
 		}
 
-		row := fmt.Sprintf("%s %-*s %-*s",
-			starIcon,
-			colAlbum, truncate(album.Name, colAlbum),
-			colArtist, truncate(album.Artist, colArtist),
+		row := fmt.Sprintf("%s %s %s",
+			starIcon, // 1 char
+			LimitString(album.Name, colAlbum-2),
+			LimitString(album.Artist, colArtist),
 		)
 
 		mainContent += fmt.Sprintf("%s%s\n", cursor, style.Render(row))
@@ -345,7 +372,7 @@ func mainArtistContent(m model, mainWidth int, mainHeight int) string {
 
 	colArtist := mainWidth - 4
 	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(subtle)
-	header := fmt.Sprintf("  %-*s", colArtist, "ARTIST")
+	header := fmt.Sprintf("  %s", LimitString("ARTIST", colArtist))
 
 	mainContent := headerStyle.Render(header) + "\n"
 	mainContent += lipgloss.NewStyle().Foreground(subtle).Render("  "+strings.Repeat("-", mainWidth-4)) + "\n"
@@ -386,9 +413,9 @@ func mainArtistContent(m model, mainWidth int, mainHeight int) string {
 			starIcon = lipgloss.NewStyle().Render("♥︎")
 		}
 
-		row := fmt.Sprintf("%s %-*s",
+		row := fmt.Sprintf("%s %s",
 			starIcon,
-			colArtist, truncate(artist.Name, colArtist),
+			LimitString(artist.Name, colArtist-2),
 		)
 
 		mainContent += fmt.Sprintf("%s%s\n", cursor, style.Render(row))
@@ -438,8 +465,8 @@ func footerContent(m model) string {
 	currStr := formatDuration(int(m.playerStatus.Current))
 	durStr := formatDuration(int(m.playerStatus.Duration))
 
-	topRow := lipgloss.NewStyle().Bold(true).Foreground(highlight).Render("  " + title)
-	bottowRowArtistAlbum := lipgloss.NewStyle().Foreground(subtle).Render("  " + artist)
+	topRow := lipgloss.NewStyle().Bold(true).Foreground(highlight).Render("  " + LimitString(title, m.width-4))
+	bottowRowArtistAlbum := lipgloss.NewStyle().Foreground(subtle).Render("  " + LimitString(artist, m.width-4))
 
 	loopText := ""
 	if m.loopMode == 1 {
