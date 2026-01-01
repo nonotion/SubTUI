@@ -239,6 +239,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, nil
 
+	case playQueueResultMsg:
+		for index, song := range msg.result.Entries {
+			m.queue = append(m.queue, song)
+
+			if song.ID == msg.result.Current {
+				m.queueIndex = index
+			}
+		}
+
+		return m, m.playQueueIndex(m.queueIndex, true)
+
 	}
 
 	// Update inputs
@@ -342,7 +353,7 @@ func enter(m model) (tea.Model, tea.Cmd) {
 		} else {
 			// Queue View: Jump to selected song
 			if len(m.queue) > 0 {
-				return m, m.playQueueIndex(m.cursorMain)
+				return m, m.playQueueIndex(m.cursorMain, false)
 			}
 		}
 	case focusSidebar:
@@ -497,7 +508,9 @@ func mediaTogglePlay(m model) model {
 
 func mediaSongSkip(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.focus != focusSearch {
-		return m, m.playNext()
+		return m, tea.Batch(
+			m.playNext(),
+		)
 	} else {
 		return typeInput(m, msg)
 	}

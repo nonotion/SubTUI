@@ -37,7 +37,13 @@ type SubsonicResponse struct {
 			Album  []Album  `json:"album"`
 			Song   []Song   `json:"song"`
 		} `json:"starred2"`
+		PlayQueue PlayQueue `json:"playQueue"`
 	} `json:"subsonic-response"`
+}
+
+type PlayQueue struct {
+	Current string `json:"current"`
+	Entries []Song `json:"entry"`
 }
 
 type SearchResult3 struct {
@@ -342,4 +348,41 @@ func SubsonicCoverArt(id string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func SubsonicSaveQueue(ids []string, currentID string) {
+	baseUrl := AppConfig.URL + "/rest/savePlayQueue"
+
+	salt := generateSalt()
+	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	token := hex.EncodeToString(hash[:])
+
+	v := url.Values{}
+	v.Set("u", AppConfig.Username)
+	v.Set("t", token)
+	v.Set("s", salt)
+	v.Set("v", "1.16.1")
+	v.Set("c", "SubTUI")
+	v.Set("f", "json")
+
+	v.Set("current", currentID)
+	for _, id := range ids {
+		v.Add("id", id)
+	}
+
+	url := baseUrl + "?" + v.Encode()
+
+	resp, _ := http.Get(url)
+	defer func() { _ = resp.Body.Close() }()
+}
+
+func SubsonicGetQueue() (*PlayQueue, error) {
+	params := map[string]string{}
+
+	data, err := subsonicGET("/getPlayQueue", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return &data.Response.PlayQueue, nil
 }

@@ -14,7 +14,7 @@ func formatDuration(seconds int) string {
 	return fmt.Sprintf("%d:%02d", minutes, secs)
 }
 
-func (m *model) playQueueIndex(index int) tea.Cmd {
+func (m *model) playQueueIndex(index int, startPaused bool) tea.Cmd {
 	if index < 0 || index >= len(m.queue) {
 		return nil
 	}
@@ -22,13 +22,18 @@ func (m *model) playQueueIndex(index int) tea.Cmd {
 	m.queueIndex = index
 	song := m.queue[m.queueIndex]
 
-	return func() tea.Msg {
-		err := player.PlaySong(song.ID)
+	playCmd := func() tea.Msg {
+		err := player.PlaySong(song.ID, startPaused)
 		if err != nil {
 			return errMsg{err}
 		}
 		return nil
 	}
+
+	return tea.Batch(
+		playCmd,
+		m.savePlayQueue(),
+	)
 }
 
 func (m *model) playNext() tea.Cmd {
@@ -42,7 +47,7 @@ func (m *model) playNext() tea.Cmd {
 		return nil
 	}
 
-	return m.playQueueIndex(newIndex)
+	return m.playQueueIndex(newIndex, false)
 }
 
 func (m *model) playPrev() tea.Cmd {
@@ -55,12 +60,26 @@ func (m *model) playPrev() tea.Cmd {
 		newIndex = 0
 	}
 
-	return m.playQueueIndex(newIndex)
+	return m.playQueueIndex(newIndex, false)
 }
 
 func (m *model) setQueue(startIndex int) tea.Cmd {
 	newQueue := make([]api.Song, len(m.songs))
 	copy(newQueue, m.songs)
 	m.queue = newQueue
-	return m.playQueueIndex(startIndex)
+	return m.playQueueIndex(startIndex, false)
+}
+
+func (m *model) savePlayQueue() tea.Cmd {
+	ids := []string{}
+	currentID := ""
+
+	if len(m.queue) != 0 {
+		currentID = m.queue[m.queueIndex].ID
+		for _, song := range m.queue {
+			ids = append(ids, song.ID)
+		}
+	}
+
+	return savePlayQueueCmd(ids, currentID)
 }

@@ -137,3 +137,26 @@ func checkLoginCmd() tea.Cmd {
 		return nil
 	}
 }
+
+func getPlayQueue() tea.Cmd {
+	return func() tea.Msg {
+		result, err := api.SubsonicGetQueue()
+		if err != nil {
+			return errMsg{err}
+		}
+		return playQueueResultMsg{result}
+	}
+
+}
+
+func savePlayQueueCmd(ids []string, currentID string) tea.Cmd {
+	return func() tea.Msg {
+
+		if len(ids) != 0 {
+			api.SubsonicSaveQueue(ids, currentID)
+		}
+
+		return nil
+	}
+
+}

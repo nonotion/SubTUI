@@ -139,6 +139,10 @@ type starredResultMsg struct {
 	result *api.SearchResult3
 }
 
+type playQueueResultMsg struct {
+	result *api.PlayQueue
+}
+
 type viewLikedSongsMsg *api.SearchResult3
 
 type errMsg struct {
@@ -178,6 +182,7 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		textinput.Blink,
 		getPlaylists(),
+		getPlayQueue(),
 		syncPlayerCmd(),
 		getStarredCmd(),
 	)

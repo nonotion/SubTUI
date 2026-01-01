@@ -65,7 +65,7 @@ func ShutdownPlayer() {
 	}
 }
 
-func PlaySong(songID string) error {
+func PlaySong(songID string, startPaused bool) error {
 	if mpvClient == nil {
 		return fmt.Errorf("player not initialized")
 	}
@@ -77,7 +77,7 @@ func PlaySong(songID string) error {
 
 	api.SubsonicScrobble(songID, false)
 
-	_ = mpvClient.SetProperty("pause", false)
+	_ = mpvClient.SetProperty("pause", startPaused)
 
 	return nil
 }
