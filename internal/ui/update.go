@@ -214,7 +214,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 
-		return m, syncPlayerCmd()
+		windowTitle := "SubTUI"
+		if m.playerStatus.Title != "" && m.playerStatus.Title != "<nil>" {
+			windowTitle = fmt.Sprintf("%s - %s", m.playerStatus.Title, m.playerStatus.Artist)
+		}
+
+		return m, tea.Batch(syncPlayerCmd(), tea.SetWindowTitle(windowTitle))
 
 	case songsResultMsg:
 		m.loading = false
