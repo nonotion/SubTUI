@@ -40,19 +40,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if (msg.String() == "g" || m.lastKey == "g") && (m.focus == focusMain || m.focus == focusSidebar) {
 			switch msg.String() {
 			case "g":
-			if m.lastKey == "g" {
-				return navigateTop(m), nil
-			} else {
-				m.lastKey = "g"
-				return m, nil
-			}
+				if m.lastKey == "g" {
+					return navigateTop(m), nil
+				} else {
+					m.lastKey = "g"
+					return m, nil
+				}
 			case "a":
 				return displaySongAlbum(m)
 			case "r":
 				return displaySongArtist(m)
 			default:
-			m.lastKey = ""
-		}
+				m.lastKey = ""
+			}
 		}
 
 		switch msg.String() {
@@ -419,16 +419,10 @@ func goBack(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 		return toggleQueue(m), nil
 	}
 
-	switch m.displayMode {
-	case displaySongs:
-		if m.albums != nil {
-			m.displayMode = displayAlbums
-		}
-	case displayAlbums:
-		if m.artists != nil {
-			m.displayMode = displayArtist
-		}
-	}
+	m.displayMode = m.displayModePrev
+	m.displayModePrev = m.displayMode
+
+	m.viewMode = viewList
 
 	return m, nil
 }
