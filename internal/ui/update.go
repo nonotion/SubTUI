@@ -37,15 +37,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return login(m, msg)
 		}
 
-		if msg.String() == "g" {
+		if (msg.String() == "g" || m.lastKey == "g") && (m.focus == focusMain || m.focus == focusSidebar) {
+			switch msg.String() {
+			case "g":
 			if m.lastKey == "g" {
 				return navigateTop(m), nil
 			} else {
 				m.lastKey = "g"
 				return m, nil
 			}
-		} else {
+			case "a":
+				return displaySongAlbum(m)
+			case "r":
+				return displaySongArtist(m)
+			default:
 			m.lastKey = ""
+		}
 		}
 
 		switch msg.String() {
@@ -505,6 +512,46 @@ func navigateDown(m model) model {
 	}
 
 	return m
+}
+
+func displaySongAlbum(m model) (tea.Model, tea.Cmd) {
+	var targetList []api.Song
+	switch m.viewMode {
+	case viewList:
+		targetList = m.songs
+	case viewQueue:
+		targetList = m.queue
+	}
+	albumCmd := getAlbumSongs(targetList[m.cursorMain].AlbumID)
+
+	m.viewMode = viewList
+	m.displayModePrev = m.displayMode
+	m.displayMode = displaySongs
+	m.mainOffset = 0
+	m.cursorMain = 0
+	m.loading = true
+
+	return m, albumCmd
+}
+
+func displaySongArtist(m model) (tea.Model, tea.Cmd) {
+	var targetList []api.Song
+	switch m.viewMode {
+	case viewList:
+		targetList = m.songs
+	case viewQueue:
+		targetList = m.queue
+	}
+	albumCmd := getArtistAlbums(targetList[m.cursorMain].ArtistID)
+
+	m.viewMode = viewList
+	m.displayModePrev = m.displayMode
+	m.displayMode = displayAlbums
+	m.mainOffset = 0
+	m.cursorMain = 0
+	m.loading = true
+
+	return m, albumCmd
 }
 
 func cycleFilter(m model, forward bool) model {
