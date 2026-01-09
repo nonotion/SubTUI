@@ -144,7 +144,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return mediaShowFavorites(m, msg)
 
 		case "s":
-			return toggleNotifications(m)
+			m = toggleNotifications(m)
 		}
 
 	case loginResultMsg:
@@ -919,9 +919,12 @@ func mediaShowFavorites(m model, msg tea.Msg) (model, tea.Cmd) {
 	return m, openLikedSongsCmd()
 }
 
-func toggleNotifications(m model) (model, tea.Cmd) {
-	m.notify = !m.notify
-	return m, nil
+func toggleNotifications(m model) model {
+	if m.focus != focusSearch {
+		m.notify = !m.notify
+	}
+
+	return m
 }
 
 func (m *model) updateLoginInputs(msg tea.Msg) tea.Cmd {
