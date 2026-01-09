@@ -473,8 +473,7 @@ func footerContent(m model) string {
 		notifyText = "[Silent]"
 	}
 
-	topRowGap := m.width - 2 - 3 - 3 - len(notifyText)
-	topRowGap -= len(title)
+	topRowGap := m.width - 2 - 3 - 3 - len(notifyText) - len(title)
 
 	if topRowGap > 0 {
 		title += strings.Repeat(" ", topRowGap) + notifyText
