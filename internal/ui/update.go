@@ -142,6 +142,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "F":
 			return mediaShowFavorites(m, msg)
+
+		case "s":
+			m = toggleNotifications(m)
 		}
 
 	case loginResultMsg:
@@ -206,18 +209,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.scrobbled = false
 
-				go func() {
-					artBytes, err := api.SubsonicCoverArt(currentSong.ID)
+				if m.notify {
+					go func() {
+						artBytes, err := api.SubsonicCoverArt(currentSong.ID)
 
-					title := "SubTUI"
-					description := fmt.Sprintf("Playing %s - %s", currentSong.Title, currentSong.Artist)
+						title := "SubTUI"
+						description := fmt.Sprintf("Playing %s - %s", currentSong.Title, currentSong.Artist)
 
-					if err != nil {
-						_ = beeep.Notify(title, description, "")
-					} else {
-						_ = beeep.Notify(title, description, artBytes)
-					}
-				}()
+						if err != nil {
+							_ = beeep.Notify(title, description, "")
+						} else {
+							_ = beeep.Notify(title, description, artBytes)
+						}
+					}()
+				}
 			}
 		}
 
@@ -912,6 +917,14 @@ func mediaShowFavorites(m model, msg tea.Msg) (model, tea.Cmd) {
 	m.focus = focusMain
 
 	return m, openLikedSongsCmd()
+}
+
+func toggleNotifications(m model) model {
+	if m.focus != focusSearch {
+		m.notify = !m.notify
+	}
+
+	return m
 }
 
 func (m *model) updateLoginInputs(msg tea.Msg) tea.Cmd {

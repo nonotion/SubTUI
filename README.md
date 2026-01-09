@@ -105,6 +105,12 @@ go build .
 | `K` | Move song up (Reorder)   |
 | `J` | Move song down (Reorder) |
 
+### Other
+
+| Key | Action               |
+| --- | -------------------- |
+| `s` | Toggle notifications |
+
 ## Configuration
 
 On the first launch, SubTUI will ask for your server credentials:

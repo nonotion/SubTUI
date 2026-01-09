@@ -468,6 +468,17 @@ func footerContent(m model) string {
 		artistAlbumText = m.playerStatus.Artist + " - " + m.playerStatus.Album
 	}
 
+	notifyText := ""
+	if !m.notify {
+		notifyText = "[Silent]"
+	}
+
+	topRowGap := m.width - 2 - 3 - 3 - len(notifyText) - len(title)
+
+	if topRowGap > 0 {
+		title += strings.Repeat(" ", topRowGap) + notifyText
+	}
+
 	barWidth := m.width - 20
 	if barWidth < 10 {
 		barWidth = 10

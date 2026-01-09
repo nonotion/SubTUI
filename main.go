@@ -12,6 +12,7 @@ import (
 	"github.com/MattiaPun/SubTUI/internal/player"
 	"github.com/MattiaPun/SubTUI/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/gen2brain/beeep"
 )
 
 var (
@@ -24,6 +25,8 @@ func main() {
 	debug := flag.Bool("debug", false, "Enable debug logging to subtui.log")
 	showVersion := flag.Bool("v", false, "Print version and exit")
 	flag.Parse()
+
+	beeep.AppName = "SubTUI"
 
 	if *debug {
 		f, err := tea.LogToFile("subtui.log", "debug")
