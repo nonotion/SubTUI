@@ -39,7 +39,7 @@ func main() {
 		log.Printf("Version: %s | Commit: %s", version, commit)
 		log.Printf("Config Loaded: %v", api.AppConfig.URL)
 
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 	} else {
 		log.SetOutput(io.Discard)
 	}
