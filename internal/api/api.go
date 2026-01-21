@@ -419,3 +419,12 @@ func SubsonicGetQueue() (*PlayQueue, error) {
 
 	return &data.Response.PlayQueue, nil
 }
+
+func SubsonicAddToPlaylist(songID string, playlistID string) {
+	params := map[string]string{
+		"playlistId":  playlistID,
+		"songIdToAdd": songID,
+	}
+
+	_, _ = subsonicGET("/updatePlaylist", params)
+}

@@ -14,14 +14,29 @@ import (
 func (m model) View() string {
 	base := m.BaseView()
 
-	if !m.showHelp {
-		return base
+	if m.showPlaylists {
+		rawContent := addToPlaylistContent(m)
+
+		styledContent := popupStyle.Render(
+			lipgloss.JoinVertical(lipgloss.Center,
+				lipgloss.NewStyle().Bold(true).Render("Select Playlist"),
+				"",
+				rawContent,
+			),
+		)
+
+		fg := ContentModel{Content: styledContent}
+		bg := BackgroundWrapper{RenderedView: base}
+
+		return overlay.New(fg, bg, overlay.Center, overlay.Center, 0, 0).View()
 	}
 
-	bgModel := BackgroundWrapper{RenderedView: base}
-	overlayView := overlay.New(m.helpModel, bgModel, overlay.Center, overlay.Center, 0, 0)
+	if m.showHelp {
+		bg := BackgroundWrapper{RenderedView: base}
+		return overlay.New(m.helpModel, bg, overlay.Center, overlay.Center, 0, 0).View()
+	}
 
-	return overlayView.View()
+	return base
 }
 
 func (m model) BaseView() string {
@@ -591,6 +606,7 @@ func helpViewContent() string {
 	)
 
 	libraryKeybinds := section("LIBRARY",
+		line("A", "Add to Playlist"),
 		line("gg", "Scroll Top"),
 		line("G", "Scroll Bottom"),
 		line("ga", "Go to Album"),
@@ -648,4 +664,22 @@ func helpViewContent() string {
 
 	return activeBorderStyle.Padding(1, 3).Render(content)
 
+}
+
+func addToPlaylistContent(m model) string {
+	playlistContent := ""
+	for i := 0; i < len(m.playlists); i++ {
+		cursor := ""
+		style := lipgloss.NewStyle()
+
+		if m.cursorAddToPlaylist == i {
+			style = style.Foreground(highlight).Bold(true)
+			cursor = "> "
+		}
+
+		playlistContent += fmt.Sprintf("%s%s\n", cursor, style.Render(m.playlists[i].Name))
+
+	}
+
+	return playlistContent
 }

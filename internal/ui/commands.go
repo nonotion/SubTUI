@@ -161,3 +161,14 @@ func savePlayQueueCmd(ids []string, currentID string) tea.Cmd {
 	}
 
 }
+
+func addSongToPlaylistCmd(songID string, playlistID string) tea.Cmd {
+	return func() tea.Msg {
+
+		if songID != "" && playlistID != "" {
+			api.SubsonicAddToPlaylist(songID, playlistID)
+		}
+
+		return nil
+	}
+}

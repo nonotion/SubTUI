@@ -14,6 +14,7 @@ const (
 	focusSidebar
 	focusMain
 	focusSong
+	focusPlaylist = 90
 )
 
 const (
@@ -74,6 +75,12 @@ var (
 	loginHelpStyle = lipgloss.NewStyle().
 			Foreground(subtle).
 			MarginTop(2)
+
+	// The popup
+	popupStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(highlight).
+			Padding(1, 2)
 )
 
 // --- MODEL ---
@@ -86,10 +93,11 @@ type model struct {
 	playerStatus player.PlayerStatus
 
 	// Navigation State
-	focus      int
-	cursorMain int
-	cursorSide int
-	mainOffset int
+	focus               int
+	cursorMain          int
+	cursorSide          int
+	cursorAddToPlaylist int
+	mainOffset          int
 
 	// Window Dimensions
 	width  int
@@ -128,14 +136,19 @@ type model struct {
 	// Input State
 	lastKey string
 
-	// Help Overlay
-	showHelp  bool
-	helpModel HelpModel
+	// Overlay States
+	showHelp      bool
+	showPlaylists bool
+	helpModel     HelpModel
 }
 
 type HelpModel struct {
 	Width  int
 	Height int
+}
+
+type ContentModel struct {
+	Content string
 }
 
 type BackgroundWrapper struct {
@@ -199,21 +212,23 @@ func InitialModel() model {
 	}
 
 	return model{
-		textInput:        ti,
-		songs:            []api.Song{},
-		focus:            focusSearch,
-		cursorMain:       0,
-		cursorSide:       0,
-		viewMode:         startMode,
-		filterMode:       filterSongs,
-		displayMode:      displaySongs,
-		starredMap:       make(map[string]bool),
-		lastPlayedSongID: "",
-		loginInputs:      initialLoginInputs(),
-		lastKey:          "",
-		showHelp:         false,
-		helpModel:        NewHelpModel(),
-		notify:           true,
+		textInput:           ti,
+		songs:               []api.Song{},
+		focus:               focusSearch,
+		cursorMain:          0,
+		cursorSide:          0,
+		cursorAddToPlaylist: 0,
+		viewMode:            startMode,
+		filterMode:          filterSongs,
+		displayMode:         displaySongs,
+		starredMap:          make(map[string]bool),
+		lastPlayedSongID:    "",
+		loginInputs:         initialLoginInputs(),
+		lastKey:             "",
+		showHelp:            false,
+		showPlaylists:       false,
+		helpModel:           NewHelpModel(),
+		notify:              true,
 	}
 }
 

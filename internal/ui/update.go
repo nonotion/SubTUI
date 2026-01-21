@@ -40,6 +40,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return login(m, msg)
 		}
 
+		if m.showPlaylists {
+			switch msg.String() {
+			case "esc", "A":
+				m.showPlaylists = false
+				return m, nil
+
+			case "up", "k":
+				if m.cursorAddToPlaylist > 0 {
+					m.cursorAddToPlaylist--
+				}
+			case "down", "j":
+				if m.cursorAddToPlaylist < len(m.playlists)-1 {
+					m.cursorAddToPlaylist++
+				}
+			case "enter":
+				if m.viewMode == viewList {
+					cmd = addSongToPlaylistCmd(m.songs[m.cursorMain].ID, m.playlists[m.cursorAddToPlaylist].ID)
+				} else {
+					cmd = addSongToPlaylistCmd(m.queue[m.cursorMain].ID, m.playlists[m.cursorAddToPlaylist].ID)
+				}
+				m.showPlaylists = !m.showPlaylists
+				return m, cmd
+			}
+			return m, nil
+		}
+
 		if msg.String() == "?" {
 			m.showHelp = !m.showHelp
 			return m, nil
@@ -149,6 +175,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "F":
 			return mediaShowFavorites(m, msg)
+
+		case "A":
+			m = toggleAddToPlaylistPopup(m)
 
 		case "s":
 			m = toggleNotifications(m)
@@ -952,6 +981,20 @@ func mediaShowFavorites(m model, msg tea.Msg) (model, tea.Cmd) {
 	m.focus = focusMain
 
 	return m, openLikedSongsCmd()
+}
+
+func toggleAddToPlaylistPopup(m model) model {
+	if m.focus != focusSearch && m.displayMode == displaySongs &&
+		((m.viewMode == viewList && len(m.songs) > 0) || (m.viewMode == viewQueue && len(m.queue) > 0)) {
+		m.showPlaylists = !m.showPlaylists
+
+		if m.showPlaylists {
+			m.cursorAddToPlaylist = 0
+		}
+
+	}
+
+	return m
 }
 
 func toggleNotifications(m model) model {

@@ -67,6 +67,7 @@ go build .
 
 | Key     | Action                      |
 | ------- | --------------------------- |
+| `A`     | Added selection to playlist |
 | `G`     | Move selection to bottom    |
 | `gg`    | Move selection to top       |
 | `ga`    | Go to album of selection    |
