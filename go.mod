@@ -3,6 +3,7 @@ module github.com/MattiaPun/SubTUI
 go 1.25.4
 
 require (
+	github.com/atotto/clipboard v0.1.4
 	github.com/babycommando/rich-go v0.0.0-20250721232012-541cbf3cf142
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.10
@@ -17,7 +18,6 @@ require (
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast v1.1.2 // indirect
-	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/colorprofile v0.3.3 // indirect
 	github.com/charmbracelet/x/ansi v0.11.3 // indirect

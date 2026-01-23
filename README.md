@@ -109,9 +109,11 @@ go build .
 
 ### Other
 
-| Key | Action               |
-| --- | -------------------- |
-| `s` | Toggle notifications |
+| Key        | Action                |
+|------------|-----------------------|
+| `?`        | Shortcut menu         |
+| `s`        | Toggle notifications  |
+| `Ctrl + s` | Create shareable link |
 
 ## Configuration
 

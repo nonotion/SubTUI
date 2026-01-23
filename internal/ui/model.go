@@ -185,6 +185,10 @@ type playQueueResultMsg struct {
 
 type viewLikedSongsMsg *api.SearchResult3
 
+type createShareMsg struct {
+	url string
+}
+
 type errMsg struct {
 	err error
 }

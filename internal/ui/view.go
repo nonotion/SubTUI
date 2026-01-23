@@ -639,6 +639,12 @@ func helpViewContent() string {
 		line("J", "Move Down"),
 	)
 
+	otherKeybinds := section("OTHERS",
+		line("?", "Shortcut Menu"),
+		line("s", "Toggle Notifications"),
+		line("Ctrl+S", "Create Share Link"),
+	)
+
 	columnLeft := lipgloss.JoinVertical(lipgloss.Left,
 		sectionSpacer.Render(globalKeybinds),
 		" ", // spacer
@@ -648,12 +654,14 @@ func helpViewContent() string {
 	columnMiddle := lipgloss.JoinVertical(lipgloss.Left,
 		sectionSpacer.Render(mediaKeybinds),
 		starredKeybinds,
+		"",
+		searchKeybinds,
 	)
 
 	columnRight := lipgloss.JoinVertical(lipgloss.Left,
 		sectionSpacer.Render(queueKeybinds),
 		" ", // spacer
-		searchKeybinds,
+		otherKeybinds,
 	)
 
 	content := lipgloss.JoinHorizontal(lipgloss.Top,

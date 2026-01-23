@@ -41,6 +41,11 @@ type SubsonicResponse struct {
 			Song   []Song   `json:"song"`
 		} `json:"starred2"`
 		PlayQueue PlayQueue `json:"playQueue"`
+		Shares    struct {
+			ShareList []struct {
+				URL string `json:"url"`
+			} `json:"share"`
+		} `json:"shares"`
 	} `json:"subsonic-response"`
 }
 
@@ -427,4 +432,21 @@ func SubsonicAddToPlaylist(songID string, playlistID string) {
 	}
 
 	_, _ = subsonicGET("/updatePlaylist", params)
+}
+
+func SubsonicCreateShare(ID string) (string, error) {
+	params := map[string]string{
+		"id": ID,
+	}
+
+	data, err := subsonicGET("/createShare", params)
+	if err != nil {
+		log.Printf("[ERROR] API Error in CreateShare: %v", err)
+		return "", err
+	}
+
+	url := data.Response.Shares.ShareList[0].URL
+	log.Printf("[SHARE] Generated Share URL: %s", url)
+
+	return url, nil
 }

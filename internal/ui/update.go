@@ -11,6 +11,7 @@ import (
 	"github.com/MattiaPun/SubTUI/internal/api"
 	"github.com/MattiaPun/SubTUI/internal/integration"
 	"github.com/MattiaPun/SubTUI/internal/player"
+	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gen2brain/beeep"
 )
@@ -178,6 +179,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "A":
 			m = toggleAddToPlaylistPopup(m)
+
+		case "ctrl+s":
+			return m, mediaCreateShare(m)
 
 		case "s":
 			m = toggleNotifications(m)
@@ -373,6 +377,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.songs = msg.Songs
 
 		return m, nil
+
+	case createShareMsg:
+		err := clipboard.WriteAll(msg.url)
+		if err != nil {
+			log.Printf("Failed to write to clipboard")
+			return m, nil
+		}
 
 	case playQueueResultMsg:
 		for index, song := range msg.result.Entries {
@@ -995,6 +1006,31 @@ func toggleAddToPlaylistPopup(m model) model {
 	}
 
 	return m
+}
+
+func mediaCreateShare(m model) tea.Cmd {
+	if m.focus != focusMain {
+		return nil
+	}
+
+	var id string
+
+	switch {
+	case m.viewMode == viewList && m.displayMode == displaySongs && len(m.songs) > 0:
+		id = m.songs[m.cursorMain].ID
+
+	case m.viewMode == viewList && m.displayMode == displayAlbums && len(m.albums) > 0:
+		id = m.albums[m.cursorMain].ID
+
+	case m.viewMode == viewQueue && len(m.queue) > 0:
+		id = m.queue[m.cursorMain].ID
+	}
+
+	if id != "" {
+		return createMediaShareCmd(id)
+	}
+
+	return nil
 }
 
 func toggleNotifications(m model) model {

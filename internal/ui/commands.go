@@ -172,3 +172,18 @@ func addSongToPlaylistCmd(songID string, playlistID string) tea.Cmd {
 		return nil
 	}
 }
+
+func createMediaShareCmd(ID string) tea.Cmd {
+	return func() tea.Msg {
+
+		if ID != "" {
+			url, err := api.SubsonicCreateShare(ID)
+			if err != nil {
+				return errMsg{err}
+			}
+
+			return createShareMsg{url: url}
+		}
+		return nil
+	}
+}
