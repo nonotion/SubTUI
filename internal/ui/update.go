@@ -241,10 +241,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err = msg.err
 
 	case statusMsg:
+		m.playerStatus = player.PlayerStatus(msg)
+
 		if len(m.queue) > 0 {
 			currentSong := m.queue[m.queueIndex]
 
 			if currentSong.ID != m.lastPlayedSongID {
+
 				m.lastPlayedSongID = currentSong.ID
 				m.scrobbled = false
 
@@ -302,7 +305,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		m.playerStatus = player.PlayerStatus(msg)
 		if m.playerStatus.Path != "" &&
 			m.playerStatus.Path != "<nil>" &&
 			len(m.queue) > 0 &&
@@ -310,6 +312,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			nextIndex := m.queueIndex + 1
 			m.scrobbled = false
+			//m.notify = false
 
 			// Queue next song
 			if nextIndex < len(m.queue) {
