@@ -132,7 +132,11 @@ func (m model) syncNextSong() {
 	case LoopOne:
 		nextIndex = m.queueIndex
 	case LoopNone:
-		nextIndex = m.queueIndex + 1
+		if m.queueIndex == len(m.queue)-1 {
+			nextIndex = -1
+		} else {
+			nextIndex = m.queueIndex + 1
+		}
 	case LoopAll:
 		if m.queueIndex == len(m.queue)-1 {
 			nextIndex = 0
