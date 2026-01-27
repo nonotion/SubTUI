@@ -104,7 +104,7 @@ func UpdateNextSong(songID string) {
 		return
 	}
 
-	mpvClient.PlayClear()
+	_ = mpvClient.PlayClear()
 
 	if songID != "" {
 		_ = EnqueueSong(songID)
