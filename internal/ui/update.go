@@ -303,28 +303,39 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.playerStatus = player.PlayerStatus(msg)
+		if m.playerStatus.Path != "" &&
+			m.playerStatus.Path != "<nil>" &&
+			len(m.queue) > 0 &&
+			!strings.Contains(m.playerStatus.Path, "id="+m.queue[m.queueIndex].ID) {
 
-		if ((m.playerStatus.Duration > 0 && m.playerStatus.Current >= m.playerStatus.Duration-0.5) ||
-			(m.playerStatus.Title == "<nil>" && m.queueIndex != len(m.queue)-1)) &&
-			!m.playerStatus.Paused {
+			nextIndex := m.queueIndex + 1
+			m.scrobbled = false
 
-			switch m.loopMode {
-			case LoopNone:
-				//
-			case LoopAll:
-				if m.queueIndex == len(m.queue)-1 {
-					m.queueIndex = -1
-				}
-
-			case LoopOne:
-				m.queueIndex = m.queueIndex - 1
-
+			// Queue next song
+			if nextIndex < len(m.queue) {
+				m.queueIndex = nextIndex
 			}
 
-			return m, tea.Batch(
-				m.playNext(),
-				syncPlayerCmd(),
-			)
+			nextNextIndex := -1
+			switch m.loopMode {
+			case LoopOne:
+				nextNextIndex = nextIndex
+			case LoopNone:
+				nextNextIndex = nextIndex + 1
+			case LoopAll:
+				if nextIndex == len(m.queue)-1 {
+					nextNextIndex = 0
+				} else {
+					nextNextIndex = nextIndex + 1
+				}
+			}
+
+			// Queue next next song
+			if nextNextIndex < len(m.queue) {
+				player.UpdateNextSong(m.queue[nextNextIndex].ID)
+			} else { // End of queue, clear MPV
+				go player.UpdateNextSong("")
+			}
 		}
 
 		windowTitle := "SubTUI"
@@ -797,6 +808,9 @@ func mediaAddSongNext(m model) model {
 		}
 	}
 
+	// Sync MPV's Queue
+	m.syncNextSong()
+
 	return m
 }
 
@@ -809,6 +823,9 @@ func mediaAddSongToQueue(m model) model {
 		}
 
 	}
+
+	// Sync MPV's Queue
+	m.syncNextSong()
 
 	return m
 }
@@ -827,6 +844,9 @@ func mediaDeleteSongFromQueue(m model) model {
 		m.cursorMain--
 	}
 
+	// Sync MPV's Queue
+	m.syncNextSong()
+
 	return m
 }
 
@@ -835,6 +855,9 @@ func mediaDeleteQueue(m model) model {
 		m.queue = nil
 		m.queueIndex = 0
 	}
+
+	// Sync MPV's Queue
+	m.syncNextSong()
 
 	return m
 }
@@ -849,6 +872,9 @@ func mediaSongUpQueue(m model) model {
 		m.cursorMain--
 	}
 
+	// Sync MPV's Queue
+	m.syncNextSong()
+
 	return m
 }
 
@@ -861,6 +887,9 @@ func mediaSongDownQueue(m model) model {
 
 		m.cursorMain++
 	}
+
+	// Sync MPV's Queue
+	m.syncNextSong()
 
 	return m
 }
@@ -923,6 +952,9 @@ func mediaShuffle(m model) model {
 		}
 	}
 
+	// Sync MPV's Queue
+	m.syncNextSong()
+
 	return m
 }
 
@@ -930,6 +962,9 @@ func mediaToggleLoop(m model) model {
 	if m.focus != focusSearch {
 		m.loopMode = (m.loopMode + 1) % 3
 	}
+
+	// Sync MPV's Queue
+	m.syncNextSong()
 
 	return m
 }

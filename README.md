@@ -1,6 +1,6 @@
 # SubTUI
 
-**SubTUI** is a lightweight TUI music player for Subsonic-compatible servers (Navidrome, Gonic, Airsonic, etc.) built with Go and the Bubble Tea framework. It uses `mpv` as the underlying audio engine supporting multiple audio formats. It supports scrobbling ensuring your play counts are updated on your server and on any external services configured like Last.FM or ListenBrainz. It also features Discord Rich Presence integration, displaying your current track and status on your profile.
+**SubTUI** is a lightweight TUI music player for Subsonic-compatible servers (Navidrome, Gonic, Airsonic, etc.) built with Go and the Bubble Tea framework. It uses `mpv` as the underlying audio engine supporting multiple audio formats. It supports scrobbling ensuring your play counts are updated on your server and on any external services configured like Last.FM or ListenBrainz. You can listen to your favorites albums with gapless-playback. SubTUI also features Discord Rich Presence integration, displaying your current track and status on your profile.
 
 ![Main View](./screenshots/main_view.png)
 

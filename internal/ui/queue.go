@@ -27,6 +27,20 @@ func (m *model) playQueueIndex(index int, startPaused bool) tea.Cmd {
 		if err != nil {
 			return errMsg{err}
 		}
+
+		nextIndex := -1
+		if m.loopMode == LoopOne {
+			nextIndex = index
+		} else if index+1 < len(m.queue) {
+			nextIndex = index + 1
+		} else if m.loopMode == LoopAll && len(m.queue) > 0 {
+			nextIndex = 0
+		}
+
+		if nextIndex != -1 {
+			_ = player.EnqueueSong(m.queue[nextIndex].ID)
+		}
+
 		return nil
 	}
 
@@ -105,4 +119,31 @@ func getSelectedSongs(m model) []api.Song {
 	}
 
 	return []api.Song{}
+}
+
+func (m model) syncNextSong() {
+	if len(m.queue) == 0 {
+		go player.UpdateNextSong("")
+		return
+	}
+
+	nextIndex := -1
+	switch m.loopMode {
+	case LoopOne:
+		nextIndex = m.queueIndex
+	case LoopNone:
+		nextIndex = m.queueIndex + 1
+	case LoopAll:
+		if m.queueIndex == len(m.queue)-1 {
+			nextIndex = 0
+		} else {
+			nextIndex = m.queueIndex + 1
+		}
+	}
+
+	if nextIndex != -1 {
+		go player.UpdateNextSong(m.queue[nextIndex].ID)
+	} else {
+		go player.UpdateNextSong("")
+	}
 }
