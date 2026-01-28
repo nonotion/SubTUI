@@ -15,6 +15,7 @@ func (ins *Instance) Close() {}
 
 func (ins *Instance) UpdateStatus(status string)   {}
 func (ins *Instance) UpdateMetadata(meta Metadata) {}
+func (ins *Instance) ClearMetadata()               {}
 
 func (ins *Instance) GetStatus() string {
 	return "Stopped"
