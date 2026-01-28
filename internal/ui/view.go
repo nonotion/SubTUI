@@ -136,6 +136,13 @@ func truncate(s string, w int) string {
 	return s
 }
 
+func formatTime(v int64) string {
+	minutes := int(v) / 60
+	seconds := int(v) % 60
+
+	return fmt.Sprintf("%d:%02d", minutes, seconds)
+}
+
 func LimitString(s string, limit int) string {
 	if limit <= 0 {
 		return ""
@@ -365,12 +372,14 @@ func mainAlbumsContent(m model, mainWidth int, mainHeight int) string {
 	}
 
 	availableWidth := mainWidth - 4
-	colAlbum := int(float64(availableWidth) * 0.5)
-	colArtist := int(float64(availableWidth) * 0.5)
+	colAlbum := int(float64(availableWidth) * 0.45)
+	colArtist := int(float64(availableWidth) * 0.45)
+	colDuration := int(float64(availableWidth) * 0.1)
 	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(subtle)
-	header := fmt.Sprintf("  %s %s",
+	header := fmt.Sprintf("  %s %s %s",
 		LimitString("ALBUM", colAlbum),
 		LimitString("ARTIST", colArtist),
+		LimitString("DURATION", colDuration),
 	)
 
 	mainContent := headerStyle.Render(header) + "\n"
@@ -412,10 +421,11 @@ func mainAlbumsContent(m model, mainWidth int, mainHeight int) string {
 			starIcon = "♥"
 		}
 
-		row := fmt.Sprintf("%s %s %s",
+		row := fmt.Sprintf("%s %s %s %s",
 			starIcon, // 1 char
 			LimitString(album.Name, colAlbum-2),
 			LimitString(album.Artist, colArtist),
+			LimitString(formatTime(album.Duration), colDuration),
 		)
 
 		mainContent += fmt.Sprintf("%s%s\n", cursor, style.Render(row))
