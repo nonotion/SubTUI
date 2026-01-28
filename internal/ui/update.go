@@ -979,8 +979,8 @@ func mediaToggleFavorite(m model, msg tea.Msg) (model, tea.Cmd) {
 
 	id := ""
 
-	switch m.filterMode {
-	case filterSongs:
+	switch m.displayMode {
+	case displaySongs:
 
 		var targetList []api.Song
 		switch m.viewMode {
@@ -993,11 +993,11 @@ func mediaToggleFavorite(m model, msg tea.Msg) (model, tea.Cmd) {
 		if len(targetList) > 0 {
 			id = targetList[m.cursorMain].ID
 		}
-	case filterAlbums:
+	case displayAlbums:
 		if len(m.albums) > 0 {
 			id = m.albums[m.cursorMain].ID
 		}
-	case filterArtist:
+	case displayArtist:
 		if len(m.artists) > 0 {
 			id = m.artists[m.cursorMain].ID
 		}
