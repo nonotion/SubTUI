@@ -85,6 +85,18 @@ func (ins *Instance) UpdateMetadata(meta Metadata) {
 	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "Metadata", dbus.MakeVariant(meta.ToMap()))
 }
 
+func (ins *Instance) ClearMetadata() {
+	if ins == nil {
+		return
+	}
+
+	emptyMeta := make(map[string]dbus.Variant)
+	emptyMeta["mpris:trackid"] = dbus.MakeVariant(dbus.ObjectPath("/org/mpris/MediaPlayer2/TrackList/NoTrack"))
+
+	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "Metadata", dbus.MakeVariant(emptyMeta))
+	_ = ins.props.Set("org.mpris.MediaPlayer2.Player", "PlaybackStatus", dbus.MakeVariant("Stopped"))
+}
+
 func (ins *Instance) Close() {
 	if ins != nil && ins.conn != nil {
 		_ = ins.conn.Close()

@@ -243,6 +243,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case statusMsg:
 		m.playerStatus = player.PlayerStatus(msg)
 
+		if m.playerStatus.Path == "" || m.playerStatus.Path == "<nil>" || len(m.queue) == 0 {
+
+			m.queue = []api.Song{}
+
+			// MRPIS Update
+			if m.dbusInstance != nil {
+				m.dbusInstance.ClearMetadata()
+			}
+
+			return m, nil
+		}
+
 		if len(m.queue) > 0 {
 			currentSong := m.queue[m.queueIndex]
 
