@@ -684,16 +684,21 @@ func displaySongAlbum(m model) (tea.Model, tea.Cmd) {
 	case viewQueue:
 		targetList = m.queue
 	}
-	albumCmd := getAlbumSongs(targetList[m.cursorMain].AlbumID)
 
-	m.viewMode = viewList
-	m.displayModePrev = m.displayMode
-	m.displayMode = displaySongs
-	m.mainOffset = 0
-	m.cursorMain = 0
-	m.loading = true
+	if len(targetList) != 0 {
+		albumCmd := getAlbumSongs(targetList[m.cursorMain].AlbumID)
 
-	return m, albumCmd
+		m.viewMode = viewList
+		m.displayModePrev = m.displayMode
+		m.displayMode = displaySongs
+		m.mainOffset = 0
+		m.cursorMain = 0
+		m.loading = true
+
+		return m, albumCmd
+	}
+
+	return m, nil
 }
 
 func displaySongArtist(m model) (tea.Model, tea.Cmd) {
@@ -704,16 +709,20 @@ func displaySongArtist(m model) (tea.Model, tea.Cmd) {
 	case viewQueue:
 		targetList = m.queue
 	}
-	albumCmd := getArtistAlbums(targetList[m.cursorMain].ArtistID)
+	if len(targetList) != 0 {
+		albumCmd := getArtistAlbums(targetList[m.cursorMain].ArtistID)
 
-	m.viewMode = viewList
-	m.displayModePrev = m.displayMode
-	m.displayMode = displayAlbums
-	m.mainOffset = 0
-	m.cursorMain = 0
-	m.loading = true
+		m.viewMode = viewList
+		m.displayModePrev = m.displayMode
+		m.displayMode = displayAlbums
+		m.mainOffset = 0
+		m.cursorMain = 0
+		m.loading = true
 
-	return m, albumCmd
+		return m, albumCmd
+	}
+
+	return m, nil
 }
 
 func cycleFilter(m model, forward bool) model {
