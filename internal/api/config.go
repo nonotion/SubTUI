@@ -28,8 +28,9 @@ type Server struct {
 }
 
 type App struct {
-	Notifications bool `toml:"desktop_notifications"`
-	DiscordRPC    bool `toml:"discord_rich_presence"`
+	ReplayGain    string `toml:"replaygain"`
+	Notifications bool   `toml:"desktop_notifications"`
+	DiscordRPC    bool   `toml:"discord_rich_presence"`
 }
 
 type Theme struct {

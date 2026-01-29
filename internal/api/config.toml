@@ -4,6 +4,7 @@ username = ""
 password = ""
 
 [app]
+replaygain = "track" # Options: "track", "album", "no"
 desktop_notifications = true
 discord_rich_presence = true
 

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -36,12 +37,18 @@ func InitPlayer() error {
 	_ = exec.Command("pkill", "-f", socketPath).Run()
 	time.Sleep(200 * time.Millisecond)
 
+	replayGain := strings.ToLower(api.AppConfig.App.ReplayGain)
+	if replayGain != "track" && replayGain != "album" {
+		replayGain = "no"
+	}
+
 	args := []string{
 		"--idle",
 		"--no-video",
 		"--input-ipc-server=" + socketPath,
 		"--gapless-audio=yes",
 		"--prefetch-playlist=yes",
+		"--replaygain=" + replayGain,
 	}
 
 	mpvCmd = exec.Command("mpv", args...)
