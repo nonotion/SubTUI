@@ -43,44 +43,21 @@ const (
 
 var albumTypes = []string{"Random", "Favorites", "Recently Added", "Recently Played", "Most Played"}
 
+type Styles struct {
+	Subtle    lipgloss.AdaptiveColor
+	Highlight lipgloss.AdaptiveColor
+	Special   lipgloss.AdaptiveColor
+}
+
+var Theme Styles
+
 var (
-	// Colors
-	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#6b6b6bff"}
-	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
-	special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
-
-	// Global Borders
-	borderStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(subtle)
-
-	// Focused Border (Brighter)
-	activeBorderStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(highlight)
-
-	loginBoxStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(highlight).
-			Padding(1, 4).
-			Align(lipgloss.Center)
-
-	// The "Welcome" header
-	loginHeaderStyle = lipgloss.NewStyle().
-				Foreground(special).
-				Bold(true).
-				MarginBottom(1)
-
-	// The footer instruction
-	loginHelpStyle = lipgloss.NewStyle().
-			Foreground(subtle).
-			MarginTop(2)
-
-	// The popup
-	popupStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(highlight).
-			Padding(1, 2)
+	borderStyle       lipgloss.Style
+	activeBorderStyle lipgloss.Style
+	loginBoxStyle     lipgloss.Style
+	loginHeaderStyle  lipgloss.Style
+	loginHelpStyle    lipgloss.Style
+	popupStyle        lipgloss.Style
 )
 
 // --- MODEL ---
@@ -115,6 +92,7 @@ type model struct {
 	lastPlayedSongID string
 	scrobbled        bool
 	loginErr         string
+	discordRPC       bool
 	notify           bool
 
 	// Integrations
@@ -211,7 +189,7 @@ func InitialModel() model {
 	ti.Width = 50
 
 	startMode := viewList
-	if api.AppConfig.Username == "" || api.AppConfig.Password == "" || api.AppConfig.URL == "" {
+	if api.AppConfig.Server.Username == "" || api.AppConfig.Server.Password == "" || api.AppConfig.Server.URL == "" {
 		startMode = viewLogin
 	}
 
@@ -232,7 +210,8 @@ func InitialModel() model {
 		showHelp:            false,
 		showPlaylists:       false,
 		helpModel:           NewHelpModel(),
-		notify:              true,
+		discordRPC:          api.AppConfig.App.DiscordRPC,
+		notify:              api.AppConfig.App.Notifications,
 	}
 }
 
@@ -268,4 +247,44 @@ func initialLoginInputs() []textinput.Model {
 	inputs[2].Prompt = "Password: "
 
 	return inputs
+}
+
+func InitStyles() {
+	Theme.Subtle = lipgloss.AdaptiveColor{Light: api.AppConfig.Theme.Subtle[0], Dark: api.AppConfig.Theme.Subtle[1]}
+	Theme.Highlight = lipgloss.AdaptiveColor{Light: api.AppConfig.Theme.Highlight[0], Dark: api.AppConfig.Theme.Highlight[1]}
+	Theme.Special = lipgloss.AdaptiveColor{Light: api.AppConfig.Theme.Special[0], Dark: api.AppConfig.Theme.Special[1]}
+
+	// Global Borders
+	borderStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(Theme.Subtle)
+
+	// Focused Border (Brighter)
+	activeBorderStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(Theme.Highlight)
+
+	loginBoxStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(Theme.Highlight).
+		Padding(1, 4).
+		Align(lipgloss.Center)
+
+	// The "Welcome" header
+	loginHeaderStyle = lipgloss.NewStyle().
+		Foreground(Theme.Special).
+		Bold(true).
+		MarginBottom(1)
+
+	// The footer instruction
+	loginHelpStyle = lipgloss.NewStyle().
+		Foreground(Theme.Subtle).
+		MarginTop(2)
+
+	// The popup
+	popupStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(Theme.Highlight).
+		Padding(1, 2)
+
 }

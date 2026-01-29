@@ -26,36 +26,49 @@ func main() {
 	showVersion := flag.Bool("v", false, "Print version and exit")
 	flag.Parse()
 
-	beeep.AppName = "SubTUI"
+	// Check for version
+	if *showVersion {
+		fmt.Printf("Version: %s | Commit: %s\n", version, commit)
+		os.Exit(0)
+	}
 
+	// Check for debug mode
 	if *debug {
 		f, err := tea.LogToFile("subtui.log", "debug")
 		if err != nil {
 			fmt.Println("fatal:", err)
 			os.Exit(1)
 		}
+		defer func() { _ = f.Close() }()
 
 		log.Printf("=== SubTUI Started ===")
 		log.Printf("Version: %s | Commit: %s", version, commit)
-		log.Printf("Config Loaded: %v", api.AppConfig.URL)
-
-		defer func() { _ = f.Close() }()
 	} else {
 		log.SetOutput(io.Discard)
 	}
 
-	if *showVersion {
-		fmt.Printf("Version: %s | Commit: %s\n", version, commit)
-		os.Exit(0)
+	// Load Config
+	if err := api.LoadConfig(); err != nil {
+		fmt.Printf("Fatal error loading config: %v\n", err)
+		os.Exit(1)
 	}
 
-	_ = api.LoadConfig()
+	// Log Startup
+	if *debug {
+		log.Printf("Config Loaded: URL=%s User=%s", api.AppConfig.Server.URL, api.AppConfig.Server.Username)
+	}
+
+	// Init variables
+	ui.InitStyles()
+	beeep.AppName = "SubTUI"
 
 	// Quiet MPV when TUI is killed
 	defer player.ShutdownPlayer()
 
+	// Init TUI
 	p := tea.NewProgram(ui.InitialModel(), tea.WithAltScreen())
 
+	// Start background services
 	instance := integration.Init(p)
 	if instance != nil {
 		defer instance.Close()
@@ -67,6 +80,7 @@ func main() {
 		go p.Send(ui.SetDiscordMsg{Instance: discordIns})
 	}
 
+	// Start TUI
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Error while running program:", err)
 		os.Exit(1)

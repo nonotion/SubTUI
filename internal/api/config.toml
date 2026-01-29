@@ -1,0 +1,67 @@
+[server]
+url = ""
+username = ""
+password = ""
+
+[app]
+desktop_notifications = true
+discord_rich_presence = true
+
+[theme]
+# Format: ["Light Color", "Dark Color"]
+subtle    = ["#D9DCCF", "#6B6B6BFF"] 
+highlight = ["#874BFD", "#7D56F4"]
+special   = ["#43BF6D", "#73F59F"]
+
+[keybinds]
+  [keybinds.global]
+  cycle_focus_next = ["tab"]
+  cycle_focus_prev = ["shift+tab"]
+  back             = ["backspace"]
+  help             = ["?"]
+  quit             = ["q"]
+  hard_quit        = ["ctrl+c"]
+
+  [keybinds.navigation]
+  up     = ["k", "up"]
+  down   = ["j", "down"]
+  top    = ["gg"]
+  bottom = ["G"]
+  select = ["enter"]
+
+  [keybinds.search]
+  focus_search = ["/"]
+  filter_next  = ["ctrl+n"]
+  filter_prev  = ["ctrl+b"]
+
+  [keybinds.library]
+  add_to_playlist = ["A"]
+  go_to_album     = ["ga"]
+  go_to_artist    = ["gr"]
+
+  [keybinds.media]
+  play_pause   = ["p", "P"]
+  next         = ["n"]
+  prev         = ["b"]
+  shuffle      = ["S"]
+  loop         = ["L"]
+  restart      = ["w"]
+  rewind       = [","]
+  forward      = [";"]
+
+  [keybinds.queue]
+  toggle_queue_view = ["Q"]
+  queue_next         = ["N"]
+  queue_last         = ["a"]
+  remove_from_queue = ["d"]
+  clear_queue       = ["D"]
+  move_up           = ["K"]
+  move_down         = ["J"]
+
+  [keybinds.favorites]
+  toggle_favorite  = ["f"]
+  view_favorites   = ["F"]
+
+  [keybinds.other]
+  toggle_notifications = ["s"]
+  create_share_link    = ["ctrl+s"]

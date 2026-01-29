@@ -33,8 +33,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Key Presses
 	case tea.KeyMsg:
 
-		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
+		key := msg.String()
+
+		if keyMatches(key, api.AppConfig.Keybinds.Global.HardQuit) {
+			return hardQuit(m, msg)
 		}
 
 		if m.viewMode == viewLogin {
@@ -42,40 +44,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.showPlaylists {
-			switch msg.String() {
-			case "esc", "A":
-				m.showPlaylists = false
-				return m, nil
-
-			case "up", "k":
-				if m.cursorAddToPlaylist > 0 {
-					m.cursorAddToPlaylist--
-				}
-			case "down", "j":
-				if m.cursorAddToPlaylist < len(m.playlists)-1 {
-					m.cursorAddToPlaylist++
-				}
-			case "enter":
-				if m.viewMode == viewList {
-					cmd = addSongToPlaylistCmd(m.songs[m.cursorMain].ID, m.playlists[m.cursorAddToPlaylist].ID)
-				} else {
-					cmd = addSongToPlaylistCmd(m.queue[m.cursorMain].ID, m.playlists[m.cursorAddToPlaylist].ID)
-				}
-				m.showPlaylists = !m.showPlaylists
-				return m, cmd
-			}
-			return m, nil
+			return playlistsMenu(key, m)
 		}
 
-		if msg.String() == "?" {
+		if keyMatches(key, api.AppConfig.Keybinds.Global.Help) {
 			m.showHelp = !m.showHelp
 			return m, nil
 		} else if m.showHelp {
 			return m, nil
 		}
 
-		if (msg.String() == "g" || m.lastKey == "g") && (m.focus == focusMain || m.focus == focusSidebar) {
-			switch msg.String() {
+		if (key == "g" || m.lastKey == "g") && (m.focus == focusMain || m.focus == focusSidebar) {
+			switch key {
 			case "g":
 				if m.lastKey == "g" {
 					return navigateTop(m), nil
@@ -92,99 +72,136 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		switch msg.String() {
-		case "q":
-			return quit(m, msg)
+		// GLOBAL KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Global.CycleFocusNext) {
+			return cycleFocus(m, true), nil
+		}
 
-		case "/":
-			return focusSearchBar(m), nil
+		if keyMatches(key, api.AppConfig.Keybinds.Global.CycleFocusPrev) {
+			return cycleFocus(m, false), nil
+		}
 
-		case "tab":
-			m = cycleFocus(m, true)
-
-		case "shift+tab":
-			m = cycleFocus(m, false)
-
-		case "enter":
-			return enter(m)
-
-		case "backspace":
+		if keyMatches(key, api.AppConfig.Keybinds.Global.Back) {
 			return goBack(m, msg)
+		}
 
-		case "G":
-			m = navigateBottom(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Global.Quit) {
+			return quit(m, msg)
+		}
 
-		case "up", "k":
-			m = navigateUp(m)
+		// NAVIGATION KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Navigation.Up) {
+			return navigateUp(m), nil
+		}
 
-		case "down", "j":
-			m = navigateDown(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Navigation.Down) {
+			return navigateDown(m), nil
+		}
 
-		case "ctrl+n":
-			m = cycleFilter(m, true)
+		if keyMatches(key, api.AppConfig.Keybinds.Navigation.Bottom) {
+			return navigateBottom(m), nil
+		}
 
-		case "ctrl+b":
-			m = cycleFilter(m, false)
+		if keyMatches(key, api.AppConfig.Keybinds.Navigation.Select) {
+			return enter(m)
+		}
 
-		case "Q":
-			m = toggleQueue(m)
+		// SEARCH KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Search.FocusSearch) {
+			return focusSearchBar(m), nil
+		}
 
-		case "p", "P":
-			m = mediaTogglePlay(m, msg)
+		if keyMatches(key, api.AppConfig.Keybinds.Search.FilterNext) {
+			return cycleFilter(m, true), nil
+		}
 
-		case "n":
+		if keyMatches(key, api.AppConfig.Keybinds.Search.FilterPrev) {
+			return cycleFilter(m, false), nil
+		}
+
+		// LIBRARY KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Library.AddToPlaylist) {
+			return toggleAddToPlaylistPopup(m), nil
+		}
+
+		// MEDIA KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Media.PlayPause) {
+			return mediaTogglePlay(m, msg), nil
+		}
+
+		if keyMatches(key, api.AppConfig.Keybinds.Media.Next) {
 			return mediaSongSkip(m, msg)
+		}
 
-		case "b":
+		if keyMatches(key, api.AppConfig.Keybinds.Media.Prev) {
 			return mediaSongPrev(m, msg)
+		}
 
-		case "N":
-			m = mediaAddSongNext(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Media.Shuffle) {
+			return mediaShuffle(m), nil
+		}
 
-		case "a":
-			m = mediaAddSongToQueue(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Media.Loop) {
+			return mediaToggleLoop(m), nil
+		}
 
-		case "d":
-			m = mediaDeleteSongFromQueue(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Media.Restart) {
+			return mediaRestartSong(m), nil
+		}
 
-		case "D":
-			m = mediaDeleteQueue(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Media.Rewind) {
+			return mediaSeekRewind(m), nil
+		}
 
-		case "K":
-			m = mediaSongUpQueue(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Media.Forward) {
+			return mediaSeekForward(m), nil
+		}
 
-		case "J":
-			m = mediaSongDownQueue(m)
+		// QUEUE KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Queue.ToggleQueueView) {
+			return toggleQueue(m), nil
+		}
 
-		case "w":
-			m = mediaRestartSong(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Queue.QueueNext) {
+			return mediaQueueNext(m), nil
+		}
 
-		case ",":
-			m = mediaSeekRewind(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Queue.QueueLast) {
+			return mediaQueueLast(m), nil
+		}
 
-		case ";":
-			m = mediaSeekForward(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Queue.RemoveFromQueue) {
+			return mediaDeleteSongFromQueue(m), nil
+		}
 
-		case "S":
-			m = mediaShuffle(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Queue.ClearQueue) {
+			return mediaClearQueue(m), nil
+		}
 
-		case "L":
-			m = mediaToggleLoop(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Queue.MoveUp) {
+			return mediaSongUpQueue(m), nil
+		}
 
-		case "f":
+		if keyMatches(key, api.AppConfig.Keybinds.Queue.MoveDown) {
+			return mediaSongDownQueue(m), nil
+		}
+
+		// FAVORITES KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Favorites.ToggleFavorite) {
 			return mediaToggleFavorite(m, msg)
+		}
 
-		case "F":
+		if keyMatches(key, api.AppConfig.Keybinds.Favorites.ViewFavorites) {
 			return mediaShowFavorites(m, msg)
+		}
 
-		case "A":
-			m = toggleAddToPlaylistPopup(m)
-
-		case "ctrl+s":
+		// OTHER KEYBINDS
+		if keyMatches(key, api.AppConfig.Keybinds.Other.CreateShareLink) {
 			return m, mediaCreateShare(m)
+		}
 
-		case "s":
-			m = toggleNotifications(m)
+		if keyMatches(key, api.AppConfig.Keybinds.Other.ToggleNotifications) {
+			return toggleNotifications(m), nil
 		}
 
 	case loginResultMsg:
@@ -207,9 +224,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewMode = viewLogin
-			m.loginInputs[0].SetValue(api.AppConfig.URL)
-			m.loginInputs[1].SetValue(api.AppConfig.Username)
-			m.loginInputs[2].SetValue(api.AppConfig.Password)
+			m.loginInputs[0].SetValue(api.AppConfig.Server.URL)
+			m.loginInputs[1].SetValue(api.AppConfig.Server.Username)
+			m.loginInputs[2].SetValue(api.AppConfig.Server.Password)
 
 			m.loginFocus = 0
 			m.loginInputs[0].Focus()
@@ -294,7 +311,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				// Discord Update
-				if m.discordInstance != nil {
+				if m.discordRPC && m.discordInstance != nil {
 					m.discordInstance.UpdateActivity(metadata)
 				}
 			}
@@ -449,10 +466,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func keyMatches(key string, bindings []string) bool {
+	for _, k := range bindings {
+		if k == key {
+			return true
+		}
+	}
+	return false
+}
+
 func typeInput(m model, msg tea.Msg) (model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.textInput, cmd = m.textInput.Update(msg)
 	return m, cmd
+}
+
+func hardQuit(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
+	return m, tea.Quit
 }
 
 func quit(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -812,7 +842,7 @@ func mediaSongPrev(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func mediaAddSongNext(m model) model {
+func mediaQueueNext(m model) model {
 	if m.focus == focusMain {
 		selectedSongs := getSelectedSongs(m)
 
@@ -838,7 +868,7 @@ func mediaAddSongNext(m model) model {
 	return m
 }
 
-func mediaAddSongToQueue(m model) model {
+func mediaQueueLast(m model) model {
 	if m.focus == focusMain {
 		selectedSongs := getSelectedSongs(m)
 
@@ -874,7 +904,7 @@ func mediaDeleteSongFromQueue(m model) model {
 	return m
 }
 
-func mediaDeleteQueue(m model) model {
+func mediaClearQueue(m model) model {
 	if m.focus == focusMain {
 		m.queue = nil
 		m.queueIndex = 0
@@ -1134,9 +1164,9 @@ func login(m model, msg tea.Msg) (model, tea.Cmd) {
 					return m, nil
 				}
 
-				api.AppConfig.URL = strings.TrimSuffix(domain, "/")
-				api.AppConfig.Username = username
-				api.AppConfig.Password = password
+				api.AppConfig.Server.URL = strings.TrimSuffix(domain, "/")
+				api.AppConfig.Server.Username = username
+				api.AppConfig.Server.Password = password
 
 				return m, tea.Batch(
 					attemptLoginCmd(),
@@ -1167,4 +1197,32 @@ func login(m model, msg tea.Msg) (model, tea.Cmd) {
 	}
 
 	return m, m.updateLoginInputs(msg)
+}
+
+func playlistsMenu(key string, m model) (model, tea.Cmd) {
+	var cmd tea.Cmd
+	if keyMatches(key, api.AppConfig.Keybinds.Global.Back) || keyMatches(key, api.AppConfig.Keybinds.Library.AddToPlaylist) {
+		m.showPlaylists = false
+		return m, nil
+	}
+
+	if keyMatches(key, api.AppConfig.Keybinds.Navigation.Up) {
+		if m.cursorAddToPlaylist > 0 {
+			m.cursorAddToPlaylist--
+		}
+	} else if keyMatches(key, api.AppConfig.Keybinds.Navigation.Down) {
+		if m.cursorAddToPlaylist < len(m.playlists)-1 {
+			m.cursorAddToPlaylist++
+		}
+	} else if keyMatches(key, api.AppConfig.Keybinds.Navigation.Select) {
+		if m.viewMode == viewList {
+			cmd = addSongToPlaylistCmd(m.songs[m.cursorMain].ID, m.playlists[m.cursorAddToPlaylist].ID)
+		} else {
+			cmd = addSongToPlaylistCmd(m.queue[m.cursorMain].ID, m.playlists[m.cursorAddToPlaylist].ID)
+		}
+		m.showPlaylists = !m.showPlaylists
+		return m, cmd
+	}
+
+	return m, nil
 }

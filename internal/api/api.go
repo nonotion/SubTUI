@@ -107,14 +107,14 @@ func generateSalt() string {
 }
 
 func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, error) {
-	baseUrl := AppConfig.URL + "/rest" + endpoint
+	baseUrl := AppConfig.Server.URL + "/rest" + endpoint
 
 	salt := generateSalt()
-	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	hash := md5.Sum([]byte(AppConfig.Server.Password + salt))
 	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}
-	v.Set("u", AppConfig.Username)
+	v.Set("u", AppConfig.Server.Username)
 	v.Set("t", token)
 	v.Set("s", salt)
 	v.Set("v", "1.16.1")
@@ -319,16 +319,16 @@ func SubsonicGetStarred() (*SearchResult3, error) {
 }
 
 func SubsonicStream(id string) string {
-	baseUrl := AppConfig.URL + "/rest/stream"
+	baseUrl := AppConfig.Server.URL + "/rest/stream"
 
 	salt := generateSalt()
-	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	hash := md5.Sum([]byte(AppConfig.Server.Password + salt))
 	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}
 	v.Set("id", id)
 	v.Set("maxBitRate", "0")
-	v.Set("u", AppConfig.Username)
+	v.Set("u", AppConfig.Server.Username)
 	v.Set("t", token)
 	v.Set("s", salt)
 	v.Set("v", "1.16.1")
@@ -353,16 +353,16 @@ func SubsonicScrobble(id string, submission bool) {
 }
 
 func SubsonicCoverArtUrl(id string, size int) string {
-	baseUrl := AppConfig.URL + "/rest/getCoverArt"
+	baseUrl := AppConfig.Server.URL + "/rest/getCoverArt"
 
 	salt := generateSalt()
-	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	hash := md5.Sum([]byte(AppConfig.Server.Password + salt))
 	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}
 	v.Set("id", id)
 	v.Set("size", strconv.Itoa(size))
-	v.Set("u", AppConfig.Username)
+	v.Set("u", AppConfig.Server.Username)
 	v.Set("t", token)
 	v.Set("s", salt)
 	v.Set("v", "1.16.1")
@@ -390,14 +390,14 @@ func SubsonicCoverArt(id string) ([]byte, error) {
 }
 
 func SubsonicSaveQueue(ids []string, currentID string) {
-	baseUrl := AppConfig.URL + "/rest/savePlayQueue"
+	baseUrl := AppConfig.Server.URL + "/rest/savePlayQueue"
 
 	salt := generateSalt()
-	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	hash := md5.Sum([]byte(AppConfig.Server.Password + salt))
 	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}
-	v.Set("u", AppConfig.Username)
+	v.Set("u", AppConfig.Server.Username)
 	v.Set("t", token)
 	v.Set("s", salt)
 	v.Set("v", "1.16.1")
