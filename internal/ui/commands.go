@@ -31,7 +31,6 @@ func searchCmd(query string, mode int) tea.Cmd {
 			return songsResultMsg{songs}
 
 		case filterAlbums:
-			// Ensure api.SubsonicSearchAlbum exists in your api package!
 			albums, err := api.SubsonicSearchAlbum(query, 0)
 			if err != nil {
 				return errMsg{err}
@@ -39,7 +38,6 @@ func searchCmd(query string, mode int) tea.Cmd {
 			return albumsResultMsg{albums}
 
 		case filterArtist:
-			// Ensure api.SubsonicSearchArtist exists in your api package!
 			artists, err := api.SubsonicSearchArtist(query, 0)
 			if err != nil {
 				return errMsg{err}
@@ -124,7 +122,7 @@ func openLikedSongsCmd() tea.Cmd {
 			return errMsg{err}
 		}
 
-		return viewLikedSongsMsg(result)
+		return viewStarredSongsMsg(result)
 	}
 }
 

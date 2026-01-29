@@ -161,7 +161,7 @@ type playQueueResultMsg struct {
 	result *api.PlayQueue
 }
 
-type viewLikedSongsMsg *api.SearchResult3
+type viewStarredSongsMsg *api.SearchResult3
 
 type createShareMsg struct {
 	url string
