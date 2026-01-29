@@ -1,10 +1,7 @@
 package ui
 
 import (
-	"time"
-
 	"github.com/MattiaPun/SubTUI/internal/api"
-	"github.com/MattiaPun/SubTUI/internal/player"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -99,12 +96,6 @@ func getPlaylistSongs(id string) tea.Cmd {
 	}
 }
 
-func syncPlayerCmd() tea.Cmd {
-	return tea.Tick(time.Millisecond*500, func(t time.Time) tea.Msg {
-		return statusMsg(player.GetPlayerStatus())
-	})
-}
-
 func getStarredCmd() tea.Cmd {
 	return func() tea.Msg {
 		result, err := api.SubsonicGetStarred()
@@ -157,7 +148,6 @@ func savePlayQueueCmd(ids []string, currentID string) tea.Cmd {
 
 		return nil
 	}
-
 }
 
 func addSongToPlaylistCmd(songID string, playlistID string) tea.Cmd {
