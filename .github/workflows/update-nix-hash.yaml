@@ -24,7 +24,7 @@ jobs:
       - name: Update vendorHash
         run: |
           nix profile install nixpkgs#nix-update
-          nix-update flake.nix --flake --version=skip
+          nix-update subtui --flake --version=skip
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
