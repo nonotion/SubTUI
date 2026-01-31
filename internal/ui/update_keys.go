@@ -859,7 +859,7 @@ func mediaShowFavorites(m model, msg tea.Msg) (model, tea.Cmd) {
 }
 
 func toggleAddToPlaylistPopup(m model) model {
-	if m.focus != focusSearch && m.displayMode == displaySongs &&
+	if m.focus == focusSearch && m.displayMode == displaySongs &&
 		((m.viewMode == viewList && len(m.songs) > 0) || (m.viewMode == viewQueue && len(m.queue) > 0)) {
 		m.showPlaylists = !m.showPlaylists
 
