@@ -566,7 +566,10 @@ func footerContent(m model) string {
 		notifyText = "[Silent]"
 	}
 
-	topRowGap := m.width - 2 - 3 - 3 - len(notifyText) - len(title)
+	const borderWidth = 2
+	const spacing = 3
+
+	topRowGap := m.width - borderWidth - 2*spacing - len(notifyText) - len(title)
 
 	if topRowGap > 0 {
 		title += strings.Repeat(" ", topRowGap) + notifyText
@@ -608,18 +611,23 @@ func footerContent(m model) string {
 		loopText = "[Loop one]"
 	}
 
+	volumeText := ""
+	if m.playerStatus.Volume != 100 {
+		volumeText = fmt.Sprintf(" [%v%%]", m.playerStatus.Volume)
+	}
+
 	bottomRowGap := 0
-	bottomRowSpaceTaken := 2 + 3 + 3 + len(artistAlbumText) + len(loopText) // 2: border, 3: spacing, 3: spacing
+	bottomRowSpaceTaken := borderWidth + 2*spacing + len(artistAlbumText) + len(loopText) + len(volumeText)
 	if artistAlbumText != "" && m.width != 0 && m.width-bottomRowSpaceTaken > 0 {
 		bottomRowGap = m.width - bottomRowSpaceTaken
 	} else if m.width != 0 {
-		bottomRowGap = m.width - 2 - 3 - 3 - len(loopText)
+		bottomRowGap = m.width - borderWidth - 2*spacing - len(loopText)
 	}
 
-	bottomRowText := artistAlbumText + strings.Repeat(" ", bottomRowGap) + loopText
+	bottomRowText := artistAlbumText + strings.Repeat(" ", bottomRowGap) + loopText + volumeText
 
-	topRow := lipgloss.NewStyle().Bold(true).Foreground(Theme.Highlight).Render("   " + LimitString(title, m.width-4))
-	bottomRow := lipgloss.NewStyle().Foreground(Theme.Subtle).Render("   " + LimitString(bottomRowText, m.width-4))
+	topRow := lipgloss.NewStyle().Bold(true).Foreground(Theme.Highlight).Render("   " + LimitString(title, m.width-borderWidth-2*spacing))
+	bottomRow := lipgloss.NewStyle().Foreground(Theme.Subtle).Render("   " + LimitString(bottomRowText, m.width-borderWidth-2*spacing))
 
 	rawProgress := fmt.Sprintf("%s %s %s",
 		currStr,
@@ -628,7 +636,7 @@ func footerContent(m model) string {
 	)
 
 	rowProgress := lipgloss.NewStyle().
-		Width(m.width - 2).
+		Width(m.width - borderWidth).
 		Align(lipgloss.Center).
 		Render(rawProgress)
 
@@ -696,6 +704,8 @@ func helpViewContent() string {
 		line(keys(api.AppConfig.Keybinds.Media.Restart), "Restart song"),
 		line(keys(api.AppConfig.Keybinds.Media.Rewind), "Rewind 10s"),
 		line(keys(api.AppConfig.Keybinds.Media.Forward), "Forward 10s"),
+		line(keys(api.AppConfig.Keybinds.Media.VolumeUp), "Volume up"),
+		line(keys(api.AppConfig.Keybinds.Media.VolumeDown), "Volume down"),
 	)
 
 	queueKeybinds := section("QUEUE",

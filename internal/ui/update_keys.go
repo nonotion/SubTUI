@@ -128,6 +128,14 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return mediaSongPrev(m, msg)
 	}
 
+	if keyMatches(key, api.AppConfig.Keybinds.Media.VolumeUp) {
+		return mediaVolumeUp(m, msg)
+	}
+
+	if keyMatches(key, api.AppConfig.Keybinds.Media.VolumeDown) {
+		return mediaVolumeDown(m, msg)
+	}
+
 	if keyMatches(key, api.AppConfig.Keybinds.Media.Shuffle) {
 		return mediaShuffle(m), nil
 	}
@@ -623,6 +631,18 @@ func mediaSongPrev(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	} else {
 		return typeInput(m, msg)
 	}
+}
+
+func mediaVolumeUp(m model, _ tea.Msg) (tea.Model, tea.Cmd) {
+	player.VolumeUp()
+	m.playerStatus.Volume = player.GetVolume()
+	return m, nil
+}
+
+func mediaVolumeDown(m model, _ tea.Msg) (tea.Model, tea.Cmd) {
+	player.VolumeDown()
+	m.playerStatus.Volume = player.GetVolume()
+	return m, nil
 }
 
 func mediaQueueNext(m model) model {
