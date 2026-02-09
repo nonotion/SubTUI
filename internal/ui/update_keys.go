@@ -62,9 +62,9 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		case "a":
-			return displaySongAlbum(m)
+			return displayAlbumFromSelected(m)
 		case "r":
-			return displaySongArtist(m)
+			return displayArtistFromSelected(m)
 		default:
 			m.lastKey = ""
 		}
@@ -518,53 +518,71 @@ func navigateDown(m model) (model, tea.Cmd) {
 	return loadMore(m)
 }
 
-func displaySongAlbum(m model) (tea.Model, tea.Cmd) {
-	var targetList []api.Song
-	switch m.viewMode {
-	case viewList:
-		targetList = m.songs
-	case viewQueue:
-		targetList = m.queue
+func displayAlbumFromSelected(m model) (tea.Model, tea.Cmd) {
+	// Only execute when focused on a song
+	if m.focus != focusMain || (m.focus == focusMain && m.displayMode != displaySongs) {
+		return m, nil
 	}
 
-	if len(targetList) != 0 {
-		albumCmd := getAlbumSongs(targetList[m.cursorMain].AlbumID)
-
-		m.viewMode = viewList
-		m.displayModePrev = m.displayMode
-		m.displayMode = displaySongs
-		m.mainOffset = 0
-		m.cursorMain = 0
-		m.loading = true
-
-		return m, albumCmd
+	albumID := ""
+	if m.viewMode == viewList && len(m.songs) != 0 {
+		// album of a songs
+		albumID = m.songs[m.cursorMain].AlbumID
+	} else if m.viewMode == viewQueue && len(m.queue) != 0 {
+		// album of a queued song
+		albumID = m.queue[m.cursorMain].AlbumID
 	}
 
-	return m, nil
+	if albumID == "" {
+		return m, nil
+	}
+
+	m.loading = true
+	m.mainOffset = 0
+	m.cursorMain = 0
+	m.lastSearchQuery = ""
+
+	m.viewMode = viewList
+	m.displayModePrev = m.displayMode
+	m.displayMode = displaySongs
+
+	return m, getAlbumSongs(albumID)
 }
 
-func displaySongArtist(m model) (tea.Model, tea.Cmd) {
-	var targetList []api.Song
-	switch m.viewMode {
-	case viewList:
-		targetList = m.songs
-	case viewQueue:
-		targetList = m.queue
-	}
-	if len(targetList) != 0 {
-		albumCmd := getArtistAlbums(targetList[m.cursorMain].ArtistID)
-
-		m.viewMode = viewList
-		m.displayModePrev = m.displayMode
-		m.displayMode = displayAlbums
-		m.mainOffset = 0
-		m.cursorMain = 0
-		m.loading = true
-
-		return m, albumCmd
+func displayArtistFromSelected(m model) (tea.Model, tea.Cmd) {
+	// Only execute when focused on a song or album
+	if m.focus != focusMain || (m.focus == focusMain && m.displayMode == displayArtist) {
+		return m, nil
 	}
 
-	return m, nil
+	artistID := ""
+	if m.viewMode == viewList {
+		if m.displayMode == displaySongs && len(m.songs) != 0 {
+			// artist of a songs
+			artistID = m.songs[m.cursorMain].ArtistID
+		} else if m.displayMode == displayAlbums && len(m.albums) != 0 {
+			// artist of an album
+			artistID = m.albums[m.cursorMain].ArtistID
+		}
+	} else if m.viewMode == viewQueue && len(m.queue) != 0 {
+		// artist of a queued song
+		artistID = m.queue[m.cursorMain].ArtistID
+	}
+
+	if artistID == "" {
+		return m, nil
+	}
+
+	m.loading = true
+	m.mainOffset = 0
+	m.cursorMain = 0
+	m.lastSearchQuery = ""
+
+	m.viewMode = viewList
+	m.displayModePrev = m.displayMode
+	m.displayMode = displayAlbums
+
+	return m, getArtistAlbums(artistID)
 }
 
 func cycleFilter(m model, forward bool) model {
