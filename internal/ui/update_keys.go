@@ -34,6 +34,15 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if keyMatches(key, api.AppConfig.Keybinds.Navigation.Select) {
 			return enter(m)
 		}
+
+		if keyMatches(key, api.AppConfig.Keybinds.Search.FilterNext) {
+			return cycleFilter(m, true), nil
+		}
+
+		if keyMatches(key, api.AppConfig.Keybinds.Search.FilterPrev) {
+			return cycleFilter(m, false), nil
+		}
+
 		return typeInput(m, msg)
 	}
 
@@ -99,14 +108,6 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	// SEARCH KEYBINDS
 	if keyMatches(key, api.AppConfig.Keybinds.Search.FocusSearch) {
 		return focusSearchBar(m), nil
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Search.FilterNext) {
-		return cycleFilter(m, true), nil
-	}
-
-	if keyMatches(key, api.AppConfig.Keybinds.Search.FilterPrev) {
-		return cycleFilter(m, false), nil
 	}
 
 	// LIBRARY KEYBINDS
