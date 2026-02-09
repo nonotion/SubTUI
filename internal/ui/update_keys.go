@@ -273,7 +273,7 @@ func enter(m model) (tea.Model, tea.Cmd) {
 			// Reset paging
 			m.pageOffset = 0
 			m.pageHasMore = true
-			// m.lastSearchQuery = query
+			m.lastSearchQuery = query
 
 			switch m.filterMode {
 			case filterSongs:
