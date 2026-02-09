@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MattiaPun/SubTUI/internal/api"
+	"github.com/MattiaPun/SubTUI/v2/internal/api"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mattn/go-runewidth"
 

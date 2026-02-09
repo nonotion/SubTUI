@@ -6,9 +6,9 @@ import (
 	"math"
 	"strings"
 
-	"github.com/MattiaPun/SubTUI/internal/api"
-	"github.com/MattiaPun/SubTUI/internal/integration"
-	"github.com/MattiaPun/SubTUI/internal/player"
+	"github.com/MattiaPun/SubTUI/v2/internal/api"
+	"github.com/MattiaPun/SubTUI/v2/internal/integration"
+	"github.com/MattiaPun/SubTUI/v2/internal/player"
 	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gen2brain/beeep"
