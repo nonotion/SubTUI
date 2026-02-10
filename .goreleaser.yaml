@@ -40,8 +40,6 @@ brews:
     directory: Formula
 
     homepage: https://github.com/MattiaPun/SubTUI
-    maintainer: "Mattia Pun <mattia@punjwani.pm>"
-    vendor: MattiaPun
     description: "A Subsonic TUI Client"
     license: "MIT"
 
@@ -52,7 +50,6 @@ brews:
 
     dependencies:
       - name: mpv
-        type: required
 
 nfpms:
   - id: packages
