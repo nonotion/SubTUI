@@ -33,6 +33,27 @@ changelog:
       - '^docs:'
       - '^test:'
 
+brews:
+  - repository:
+      owner: MattiaPun
+      name: homebrew-subtui
+    directory: Formula
+
+    homepage: https://github.com/MattiaPun/SubTUI
+    maintainer: "Mattia Pun <mattia@punjwani.pm>"
+    vendor: MattiaPun
+    description: "A Subsonic TUI Client"
+    license: "MIT"
+
+    commit_author:
+      name: MattiaPun
+      email: mattia@punjwani.pm
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+
+    dependencies:
+      - name: mpv
+        type: required
+
 nfpms:
   - id: packages
     package_name: subtui
