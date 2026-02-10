@@ -23,9 +23,18 @@ You must have **mpv** installed and available in your system path.
 * **Arch:** `sudo pacman -S mpv`
 * **macOS:** `brew install mpv`
 
-### From Releases
+### Linux & macOS (Releases)
 
-You can download pre-compiled binaries for Linux and macOS directly from the [Releases](https://github.com/MattiaPun/SubTUI/releases) page. Simply download the archive for your architecture, extract it, and run the binary.
+You can download pre-compiled binaries for Linux and macOS directly from the [Releases](https://github.com/MattiaPun/SubTUI/releases) page.
+
+* **Debian/Ubuntu**: Download the .deb file and run `sudo dpkg -i subtui_*.deb`
+* **Fedora/RHEL**: Download the .rpm file and run `sudo rpm -i subtui_*.rpm`
+* **Alpine**: Download the .apk file and run `sudo apk add --allow-untrusted ./subtui_*.apk`
+* **Generic**: Download the release for your architecture, extract it, and run the binary.
+
+### macOS (Homebrew)
+
+You can install SubTUI via the official Homebrew tap `brew install MattiaPun/subtui/subtui`
 
 ### Arch Linux (AUR)
 
@@ -35,6 +44,10 @@ You can install SubTUI directly from the AUR: `yay -S subtui-git`
 
 You can install SubTUI directly via `pkg`: `pkg install subtui`
 Note that this will automatically install the `mpv` dependency
+
+### Nix
+
+You can install SubTUI using the flake: `nix profile install github:MattiaPun/SubTUI`
 
 ### GoLang Toolchain
 
@@ -69,6 +82,7 @@ You can edit this file to save your credentials, change the color theme, or rema
 | --------------- | ------------------------------------------------------ |
 | `Tab`           | Cycle focus forward (Search → Sidebar → Main → Footer) |
 | `Shift` + `Tab` | Cycle focus backward                                   |
+| `Enter`         | Play selection / Open Album                            |
 | `Backspace`     | Back                                                   |
 | `?`             | Toggle help menu                                       |
 | `j` / `Down`    | Move selection down                                    |
@@ -89,11 +103,11 @@ You can edit this file to save your credentials, change the color theme, or rema
 | Key     | Action                      |
 | ------- | --------------------------- |
 | `A`     | Added selection to playlist |
+| `R`     | Added rating to selection   |
 | `G`     | Move selection to bottom    |
 | `gg`    | Move selection to top       |
 | `ga`    | Go to album of selection    |
 | `gr`    | Go to artist of selection   |
-| `Enter` | Play selection / Open Album |
 
 ### Media Controls
 
@@ -102,12 +116,13 @@ You can edit this file to save your credentials, change the color theme, or rema
 | `p` / `P` | Toggle play/pause                        |
 | `n`       | Play next song                           |
 | `b`       | Play previous song                       |
-| `Enter`   | Play selection / Open Album              |
 | `S`       | Shuffle Queue (Keeps current song first) |
 | `L`       | Toggle Loop (None → All → One)           |
 | `w`       | Restart song                             |
 | `,`       | Rewind 10 seconds                        |
 | `;`       | Forward 10 seconds                       |
+| `v`       | Volume Up (+5%)                          |
+| `V`       | Volume down (-5%)                        |
 
 ### Starred (liked) songs
 
@@ -132,7 +147,6 @@ You can edit this file to save your credentials, change the color theme, or rema
 
 | Key        | Action                |
 |------------|-----------------------|
-| `?`        | Shortcut menu         |
 | `s`        | Toggle notifications  |
 | `Ctrl + s` | Create shareable link |
 
@@ -152,6 +166,10 @@ Please make use of [Convention Commit Messages](https://www.conventionalcommits.
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+## Sponsor
+
+If you enjoy using SubTUI, please consider [sponsoring](https://github.com/sponsors/MattiaPun) the project to support its development.
 
 ## License
 
