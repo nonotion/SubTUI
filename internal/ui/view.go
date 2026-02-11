@@ -112,7 +112,10 @@ func (m model) BaseView() string {
 	}
 
 	mainContent := ""
-	if m.loading && len(m.albums) == 0 && m.displayMode == displayAlbums {
+	if m.loading &&
+		(m.displayMode == displaySongs && len(m.songs) == 0 ||
+			m.displayMode == displayAlbums && len(m.albums) == 0 ||
+			m.displayMode == displayArtist && len(m.artists) == 0) {
 		mainContent = "\n  Searching your library..."
 	} else if m.displayMode == displaySongs {
 		mainContent = mainSongsContent(m, mainWidth, mainHeight)
