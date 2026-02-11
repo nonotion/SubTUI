@@ -81,7 +81,7 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	// GLOBAL KEYBINDS
 	if keyMatches(key, api.AppConfig.Keybinds.Global.Back) {
-		return goBack(m, msg)
+		return goBack(m)
 	}
 
 	if keyMatches(key, api.AppConfig.Keybinds.Global.Quit) {
@@ -302,17 +302,19 @@ func enter(m model) (tea.Model, tea.Cmd) {
 				if len(m.albums) > 0 {
 					selectedAlbum := m.albums[m.cursorMain]
 					m.loading = true
+					m.displayModePrev = m.displayMode
 					m.displayMode = displaySongs
 					m.songs = nil
 
 					return m, getAlbumSongs(selectedAlbum.ID)
 				}
 
-			// Open albums of artist
+				// Open albums of artist
 			case filterArtist:
 				if len(m.artists) > 0 {
 					selectedArtist := m.artists[m.cursorMain]
 					m.loading = true
+					m.displayModePrev = m.displayMode
 					m.displayMode = displayAlbums
 					m.albums = nil
 
@@ -371,17 +373,14 @@ func enter(m model) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func goBack(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.focus == focusSearch {
-		return typeInput(m, msg)
-	}
-
+func goBack(m model) (tea.Model, tea.Cmd) {
 	if m.viewMode == viewQueue {
 		return toggleQueue(m), nil
 	}
 
+	tempDisplay := m.displayMode
 	m.displayMode = m.displayModePrev
-	m.displayModePrev = m.displayMode
+	m.displayModePrev = tempDisplay
 
 	m.viewMode = viewList
 
