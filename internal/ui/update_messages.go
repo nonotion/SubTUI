@@ -90,13 +90,14 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 	if m.playerStatus.Path == "" || m.playerStatus.Path == "<nil>" || len(m.queue) == 0 {
 
 		m.queue = []api.Song{}
+		m.lastPlayedSongID = ""
 
 		// MRPIS Update
 		if m.dbusInstance != nil {
 			m.dbusInstance.ClearMetadata()
 		}
 
-		return m, nil
+		return m, syncPlayerCmd()
 	}
 
 	if len(m.queue) > 0 {
