@@ -46,13 +46,18 @@ func searchCmd(query string, mode int, offset int) tea.Cmd {
 	}
 }
 
-func getAlbumSongs(albumID string) tea.Cmd {
+func getAlbumSongs(albumID string, shuffled bool) tea.Cmd {
 	return func() tea.Msg {
 		songs, err := api.SubsonicGetAlbum(albumID)
 		if err != nil {
 			return errMsg{err}
 		}
-		return songsResultMsg{songs}
+
+		if shuffled {
+			return shuffledSongsMsg{songs, false}
+		} else {
+			return songsResultMsg{songs}
+		}
 	}
 }
 
@@ -86,13 +91,18 @@ func getPlaylists() tea.Cmd {
 	}
 }
 
-func getPlaylistSongs(id string) tea.Cmd {
+func getPlaylistSongs(id string, shuffled bool) tea.Cmd {
 	return func() tea.Msg {
 		songs, err := api.SubsonicGetPlaylistSongs(id)
 		if err != nil {
 			return errMsg{err}
 		}
-		return songsResultMsg{songs}
+
+		if shuffled {
+			return shuffledSongsMsg{songs, true}
+		} else {
+			return songsResultMsg{songs}
+		}
 	}
 }
 

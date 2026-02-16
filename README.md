@@ -83,6 +83,7 @@ You can edit these files to save your credentials, change the color theme, or re
 | `Tab`           | Cycle focus forward (Search → Sidebar → Main → Footer) |
 | `Shift` + `Tab` | Cycle focus backward                                   |
 | `Enter`         | Play selection / Open Album                            |
+| `Alt + Enter`   | Play playlist / album shuffled                         |
 | `Backspace`     | Back                                                   |
 | `?`             | Toggle help menu                                       |
 | `j` / `Down`    | Move selection down                                    |

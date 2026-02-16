@@ -43,6 +43,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case viewStarredSongsMsg:
 		return m.handleViewStarredSongs(msg)
 
+	case shuffledSongsMsg:
+		return m.handleShuffledSongs(msg)
+
 	case createShareMsg:
 		return m.handleCreateShare(msg)
 

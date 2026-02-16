@@ -105,6 +105,10 @@ func (m model) handlesKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return enter(m)
 	}
 
+	if keyMatches(key, api.AppConfig.Keybinds.Navigation.PlayShuffled) {
+		return playShuffeled(m)
+	}
+
 	// SEARCH KEYBINDS
 	if keyMatches(key, api.AppConfig.Keybinds.Search.FocusSearch) {
 		return focusSearchBar(m), nil
@@ -306,7 +310,7 @@ func enter(m model) (tea.Model, tea.Cmd) {
 					m.displayMode = displaySongs
 					m.songs = nil
 
-					return m, getAlbumSongs(selectedAlbum.ID)
+					return m, getAlbumSongs(selectedAlbum.ID, false)
 				}
 
 				// Open albums of artist
@@ -364,10 +368,32 @@ func enter(m model) (tea.Model, tea.Cmd) {
 
 		} else {
 			m.displayMode = displaySongs
-			return m, getPlaylistSongs((m.playlists[m.cursorSide-albumOffset]).ID) // - because of the Album offset
+			return m, getPlaylistSongs((m.playlists[m.cursorSide-albumOffset]).ID, false) // - because of the Album offset
 
 		}
 
+	}
+
+	return m, nil
+}
+
+func playShuffeled(m model) (tea.Model, tea.Cmd) {
+	switch m.focus {
+	case focusMain:
+		if m.displayMode == displayAlbums && m.cursorMain <= len(m.albums) && (m.albums[m.cursorMain]).ID != "" {
+			m.loading = true
+
+			return m, getAlbumSongs(m.albums[m.cursorMain].ID, true)
+		}
+
+	case focusSidebar:
+		if m.cursorSide > (len(albumTypes)-1) && (m.playlists[m.cursorSide-len(albumTypes)]).ID != "" {
+			m.loading = true
+			m.displayMode = displaySongs
+			m.focus = focusMain
+
+			return m, getPlaylistSongs((m.playlists[m.cursorSide-len(albumTypes)]).ID, true)
+		}
 	}
 
 	return m, nil
@@ -546,7 +572,7 @@ func displayAlbumFromSelected(m model) (tea.Model, tea.Cmd) {
 	m.displayModePrev = m.displayMode
 	m.displayMode = displaySongs
 
-	return m, getAlbumSongs(albumID)
+	return m, getAlbumSongs(albumID, false)
 }
 
 func displayArtistFromSelected(m model) (tea.Model, tea.Cmd) {

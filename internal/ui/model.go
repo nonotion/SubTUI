@@ -110,6 +110,11 @@ type playlistResultMsg struct {
 	playlists []api.Playlist
 }
 
+type shuffledSongsMsg struct {
+	songs      []api.Song
+	updateView bool
+}
+
 type starredResultMsg struct {
 	result *api.SearchResult3
 }

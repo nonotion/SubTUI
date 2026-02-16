@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/MattiaPun/SubTUI/v2/internal/api"
 	"github.com/MattiaPun/SubTUI/v2/internal/integration"
@@ -279,6 +281,25 @@ func (m model) handleViewStarredSongs(msg viewStarredSongsMsg) (tea.Model, tea.C
 
 	m.songs = msg.Songs
 	return m, nil
+}
+
+func (m model) handleShuffledSongs(msg shuffledSongsMsg) (tea.Model, tea.Cmd) {
+	if msg.updateView {
+		m.songs = msg.songs
+	}
+
+	shuffledQueue := make([]api.Song, len(msg.songs))
+	copy(shuffledQueue, msg.songs)
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r.Shuffle(len(shuffledQueue), func(i, j int) {
+		shuffledQueue[i], shuffledQueue[j] = shuffledQueue[j], shuffledQueue[i]
+	})
+
+	m.queue = shuffledQueue
+	m.loading = false
+
+	return m, m.playQueueIndex(0, false)
 }
 
 func (m model) handleCreateShare(msg createShareMsg) (tea.Model, tea.Cmd) {

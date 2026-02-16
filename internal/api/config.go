@@ -68,11 +68,12 @@ type GlobalKeybinds struct {
 }
 
 type NavigationKeybinds struct {
-	Up     []string `toml:"up"`
-	Down   []string `toml:"down"`
-	Top    []string `toml:"top"`
-	Bottom []string `toml:"bottom"`
-	Select []string `toml:"select"`
+	Up           []string `toml:"up"`
+	Down         []string `toml:"down"`
+	Top          []string `toml:"top"`
+	Bottom       []string `toml:"bottom"`
+	Select       []string `toml:"select"`
+	PlayShuffled []string `toml:"play_shuffeled"`
 }
 
 type SearchKeybinds struct {
