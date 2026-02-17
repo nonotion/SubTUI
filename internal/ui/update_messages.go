@@ -14,6 +14,7 @@ import (
 	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gen2brain/beeep"
+	zone "github.com/lrstanley/bubblezone"
 )
 
 func (m model) handleWindowResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
@@ -21,6 +22,114 @@ func (m model) handleWindowResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	m.height = msg.Height
 
 	return m, nil
+}
+
+func (m model) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	if msg.Action != tea.MouseActionRelease || msg.Button != tea.MouseButtonLeft {
+		return m, nil
+	}
+
+	headerHeight := 1
+	footerHeight := int(float64(m.height) * 0.10)
+	if footerHeight < 5 {
+		footerHeight = 5
+	}
+	mainHeight := m.height - headerHeight - footerHeight - (3 * 2) // borders
+	sidebarWidth := int(float64(m.width) * 0.25)
+
+	listStartY := headerHeight + 2
+	if msg.Y < listStartY { // Header
+		m.focus = focusSearch
+		m.textInput.Focus()
+
+		if zone.Get("filter_prev").InBounds(msg) {
+			return cycleFilter(m, false), nil
+		}
+
+		if zone.Get("filter_next").InBounds(msg) {
+			return cycleFilter(m, true), nil
+		}
+
+		return m, nil
+	} else if msg.Y > listStartY+mainHeight { // Footer
+		m.focus = focusSong
+		m.textInput.Blur()
+
+		return m, nil
+	}
+
+	if msg.X < sidebarWidth { // Sidebar
+		m.focus = focusSidebar
+		m.textInput.Blur()
+
+		totalItems := len(albumTypes) + len(m.playlists)
+		endIndex := m.sideOffset + mainHeight
+		if endIndex > totalItems {
+			endIndex = totalItems
+		}
+
+		for i := m.sideOffset; i < endIndex; i++ {
+			id := fmt.Sprintf("sidebar_item_%d", i)
+
+			if zone.Get(id).InBounds(msg) {
+				m.cursorSide = i
+
+				if isDoubleClick(m, id) {
+					return enter(m)
+				}
+
+				m.lastClickTime = time.Now()
+				m.lastClickId = id
+				return m, nil
+			}
+		}
+	} else if msg.X >= sidebarWidth { // Main view
+		m.focus = focusMain
+		m.textInput.Blur()
+
+		var mainListItemsCount int
+		switch m.displayMode {
+		case displaySongs:
+			mainListItemsCount = len(m.songs)
+			if m.viewMode == viewQueue {
+				mainListItemsCount = len(m.queue)
+			}
+		case displayAlbums:
+			mainListItemsCount = len(m.albums)
+		case displayArtist:
+			mainListItemsCount = len(m.artists)
+		}
+
+		endIndex := m.mainOffset + mainHeight
+		if endIndex > mainListItemsCount {
+			endIndex = mainListItemsCount
+		}
+
+		for i := m.mainOffset; i < endIndex; i++ {
+			id := fmt.Sprintf("mainview_item_%d", i)
+			if zone.Get(id).InBounds(msg) {
+				m.cursorMain = i
+
+				if isDoubleClick(m, id) {
+					return enter(m)
+				}
+
+				m.lastClickTime = time.Now()
+				m.lastClickId = id
+				return m, nil
+			}
+		}
+	}
+
+	return m, nil
+}
+
+// Helper for checking for double click's
+func isDoubleClick(m model, clickedId string) bool {
+	if time.Since(m.lastClickTime) < time.Millisecond*500 && clickedId == m.lastClickId {
+		return true
+	}
+	return false
 }
 
 func (m model) handleLoginResult(msg loginResultMsg) (tea.Model, tea.Cmd) {

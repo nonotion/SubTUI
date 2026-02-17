@@ -41,14 +41,18 @@ func InitialModel() model {
 }
 
 func (m model) Init() tea.Cmd {
+	var cmds []tea.Cmd
+	cmds = append(cmds, textinput.Blink)
+
 	if m.viewMode == viewList {
-		return tea.Batch(
-			textinput.Blink,
-			attemptLoginCmd(),
-		)
+		cmds = append(cmds, attemptLoginCmd())
 	}
 
-	return textinput.Blink
+	if api.AppConfig.App.MouseSupport {
+		cmds = append(cmds, tea.EnableMouseCellMotion)
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func initialLoginInputs() []textinput.Model {

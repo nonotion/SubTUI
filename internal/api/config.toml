@@ -2,6 +2,7 @@
 replaygain = "track" # Options: "track", "album", "no"
 desktop_notifications = true
 discord_rich_presence = true
+mouse_support         = false
 
 [theme]
 # Format: ["Light Color", "Dark Color"]

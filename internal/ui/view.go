@@ -7,6 +7,7 @@ import (
 
 	"github.com/MattiaPun/SubTUI/v2/internal/api"
 	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 	"github.com/mattn/go-runewidth"
 
 	overlay "github.com/rmhubbert/bubbletea-overlay"
@@ -59,7 +60,7 @@ func (m model) View() string {
 		return overlay.New(m.helpModel, bg, overlay.Center, overlay.Center, 0, 0).View()
 	}
 
-	return base
+	return zone.Scan(base)
 }
 
 func (m model) BaseView() string {
@@ -234,16 +235,18 @@ func loginView(m model) string {
 func headerContent(m model) string {
 
 	leftContent := "Search: " + m.textInput.View()
-	rightContent := ""
+	filterMode := ""
 
 	switch m.filterMode {
 	case filterSongs:
-		rightContent = "< Songs >"
+		filterMode = "Songs"
 	case filterAlbums:
-		rightContent = "< Albums >"
+		filterMode = "Albums"
 	case filterArtist:
-		rightContent = "< Artist >"
+		filterMode = "Artist"
 	}
+
+	rightContent := fmt.Sprintf("%s %s %s", zone.Mark("filter_prev", "<"), filterMode, zone.Mark("filter_next", ">"))
 
 	innerWidth := m.width - 5
 	gapWidth := innerWidth - lipgloss.Width(leftContent) - lipgloss.Width(rightContent)
@@ -320,11 +323,13 @@ func sidebarContent(m model, mainHeight int, sidebarWidth int) string {
 		}
 
 		line := cursor + truncate(name, sidebarWidth-4)
-		content += style.Render(line) + "\n"
+
+		id := fmt.Sprintf("sidebar_item_%d", i)
+		content += zone.Mark(id, style.Render(line)) + "\n"
 		currentLine++
 	}
 
-	return content
+	return zone.Mark("id_sidebar", content)
 }
 
 func mainSongsContent(m model, mainWidth int, mainHeight int) string {
@@ -416,6 +421,9 @@ func mainSongsContent(m model, mainWidth int, mainHeight int) string {
 			formatDuration(song.Duration),
 		)
 
+		id := fmt.Sprintf("mainview_item_%d", i)
+		row = zone.Mark(id, style.Render(row))
+
 		mainContent += fmt.Sprintf("%s%s\n", cursor, style.Render(row))
 	}
 
@@ -484,6 +492,9 @@ func mainAlbumsContent(m model, mainWidth int, mainHeight int) string {
 			LimitString(formatTime(album.Duration), colDuration),
 		)
 
+		id := fmt.Sprintf("mainview_item_%d", i)
+		row = zone.Mark(id, style.Render(row))
+
 		mainContent += fmt.Sprintf("%s%s\n", cursor, style.Render(row))
 	}
 
@@ -542,6 +553,9 @@ func mainArtistContent(m model, mainWidth int, mainHeight int) string {
 			starIcon,
 			LimitString(artist.Name, colArtist-2),
 		)
+
+		id := fmt.Sprintf("mainview_item_%d", i)
+		row = zone.Mark(id, style.Render(row))
 
 		mainContent += fmt.Sprintf("%s%s\n", cursor, style.Render(row))
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/MattiaPun/SubTUI/v2/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gen2brain/beeep"
+	zone "github.com/lrstanley/bubblezone"
 )
 
 var (
@@ -31,6 +32,10 @@ func main() {
 		fmt.Printf("Version: %s | Commit: %s\n", version, commit)
 		os.Exit(0)
 	}
+
+	// Mouse support
+	zone.NewGlobal()
+	defer zone.Close()
 
 	// Check for debug mode
 	if *debug {

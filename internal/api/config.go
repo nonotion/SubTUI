@@ -39,6 +39,7 @@ type App struct {
 	ReplayGain    string `toml:"replaygain"`
 	Notifications bool   `toml:"desktop_notifications"`
 	DiscordRPC    bool   `toml:"discord_rich_presence"`
+	MouseSupport  bool   `toml:"mouse_support"`
 }
 
 type Theme struct {

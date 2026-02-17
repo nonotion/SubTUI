@@ -16,6 +16,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		return m.handlesKeys(msg)
 
+	case tea.MouseMsg:
+		return m.handleMouse(msg)
+
 	case loginResultMsg:
 		return m.handleLoginResult(msg)
 

@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"time"
+
 	"github.com/MattiaPun/SubTUI/v2/internal/api"
 	"github.com/MattiaPun/SubTUI/v2/internal/integration"
 	"github.com/MattiaPun/SubTUI/v2/internal/player"
@@ -75,6 +77,10 @@ type model struct {
 	albumListType   string
 	pageOffset      int
 	pageHasMore     bool
+
+	// Mouse state
+	lastClickTime time.Time
+	lastClickId   string
 }
 
 type HelpModel struct {
