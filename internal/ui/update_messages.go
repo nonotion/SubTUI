@@ -17,6 +17,8 @@ import (
 	zone "github.com/lrstanley/bubblezone"
 )
 
+const doubleClickThreshold = 500 * time.Millisecond
+
 func (m model) handleWindowResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	m.width = msg.Width
 	m.height = msg.Height
@@ -126,10 +128,7 @@ func (m model) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 
 // Helper for checking for double click's
 func isDoubleClick(m model, clickedId string) bool {
-	if time.Since(m.lastClickTime) < time.Millisecond*500 && clickedId == m.lastClickId {
-		return true
-	}
-	return false
+	return time.Since(m.lastClickTime) < doubleClickThreshold && clickedId == m.lastClickId
 }
 
 func (m model) handleLoginResult(msg loginResultMsg) (tea.Model, tea.Cmd) {
