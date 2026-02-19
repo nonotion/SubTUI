@@ -58,7 +58,14 @@ func (m *model) playNext() tea.Cmd {
 	newIndex := m.queueIndex + 1
 
 	if newIndex >= len(m.queue) {
-		return nil
+		switch m.loopMode {
+		case LoopAll:
+			newIndex = 0
+		case LoopOne:
+			newIndex = m.queueIndex
+		default:
+			return nil
+		}
 	}
 
 	return m.playQueueIndex(newIndex, false)
