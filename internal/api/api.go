@@ -346,7 +346,12 @@ func SubsonicSaveQueue(ids []string, currentID string) {
 
 	url := baseUrl + "?" + v.Encode()
 
-	resp, _ := http.Get(url)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Printf("[API] Failed to save queue: %v", err)
+		return
+	}
+
 	defer func() { _ = resp.Body.Close() }()
 }
 
