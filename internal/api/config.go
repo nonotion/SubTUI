@@ -132,7 +132,7 @@ func getConfigPath(configName string) string {
 	return filepath.Join(home, ".config", "subtui", configName)
 }
 
-func createDefaultConfig(path string, content []byte, label string) error {
+func createDefaultConfig(path string, content []byte, label string, permissions os.FileMode) error {
 	// Create config dir
 	dir := filepath.Dir(path)
 	err := os.MkdirAll(dir, 0755)
@@ -141,7 +141,7 @@ func createDefaultConfig(path string, content []byte, label string) error {
 	}
 
 	// Write Default config
-	if err := os.WriteFile(path, content, 0644); err != nil {
+	if err := os.WriteFile(path, content, permissions); err != nil {
 		return err
 	}
 
@@ -162,13 +162,13 @@ func LoadConfig() error {
 
 	// Create config files if missing
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		if err := createDefaultConfig(configPath, defaultConfig, "app"); err != nil {
+		if err := createDefaultConfig(configPath, defaultConfig, "app", 0644); err != nil {
 			return fmt.Errorf("failed to create default config: %w", err)
 		}
 	}
 	if _, err := os.Stat(serverConfigPath); os.IsNotExist(err) {
-		if err := createDefaultConfig(serverConfigPath, defaultServerConfig, "server"); err != nil {
-			return fmt.Errorf("failed to create default server config: %w", err)
+		if err := createDefaultConfig(serverConfigPath, defaultServerConfig, "server", 0600); err != nil {
+			return fmt.Errorf("failed to create default credential config: %w", err)
 		}
 	}
 
