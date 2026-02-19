@@ -36,8 +36,8 @@ func InitPlayer() error {
 	socketPath := filepath.Join(os.TempDir(), fmt.Sprintf("subtui_mpv_socket_%d", os.Getuid()))
 	log.Printf("[Player] Initializing MPV IPC at %s", socketPath)
 
-	_ = exec.Command("pkill", "-f", socketPath).Run()
-	time.Sleep(200 * time.Millisecond)
+	killArg := fmt.Sprintf("--input-ipc-server=%s", socketPath)
+	_ = exec.Command("pkill", "-f", "--", killArg).Run()
 
 	replayGain := strings.ToLower(api.AppConfig.App.ReplayGain)
 	if replayGain != "track" && replayGain != "album" {
