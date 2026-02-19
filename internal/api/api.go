@@ -14,6 +14,10 @@ import (
 	"time"
 )
 
+var httpClient = &http.Client{
+	Timeout: 20 * time.Second,
+}
+
 // Helper: Generate a random salt
 func generateSalt() string {
 	b := make([]byte, 8)
@@ -77,7 +81,7 @@ func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, 
 	fullUrl := baseUrl + "?" + v.Encode()
 
 	log.Printf("[API] Request: %s", redactURL(fullUrl))
-	resp, err := http.Get(fullUrl)
+	resp, err := httpClient.Get(fullUrl)
 	if err != nil {
 		log.Printf("[API] Connection Failed: %v", err)
 		return nil, err
@@ -320,7 +324,7 @@ func SubsonicCoverArtUrl(id string, size int) string {
 
 func SubsonicCoverArt(id string) ([]byte, error) {
 	url := SubsonicCoverArtUrl(id, 50)
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -346,7 +350,7 @@ func SubsonicSaveQueue(ids []string, currentID string) {
 
 	url := baseUrl + "?" + v.Encode()
 
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		log.Printf("[API] Failed to save queue: %v", err)
 		return
