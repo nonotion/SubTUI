@@ -791,6 +791,13 @@ func mediaSongUpQueue(m model) model {
 		m.queue[m.cursorMain] = m.queue[m.cursorMain-1]
 		m.queue[m.cursorMain-1] = tempSong
 
+		switch m.queueIndex {
+		case m.cursorMain:
+			m.queueIndex--
+		case m.cursorMain - 1:
+			m.queueIndex++
+		}
+
 		m.cursorMain--
 	}
 
@@ -806,6 +813,13 @@ func mediaSongDownQueue(m model) model {
 
 		m.queue[m.cursorMain] = m.queue[m.cursorMain+1]
 		m.queue[m.cursorMain+1] = tempSong
+
+		switch m.queueIndex {
+		case m.cursorMain:
+			m.queueIndex++
+		case m.cursorMain + 1:
+			m.queueIndex--
+		}
 
 		m.cursorMain++
 	}
