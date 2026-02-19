@@ -400,8 +400,7 @@ func (m model) handleShuffledSongs(msg shuffledSongsMsg) (tea.Model, tea.Cmd) {
 	shuffledQueue := make([]api.Song, len(msg.songs))
 	copy(shuffledQueue, msg.songs)
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	r.Shuffle(len(shuffledQueue), func(i, j int) {
+	rand.Shuffle(len(shuffledQueue), func(i, j int) {
 		shuffledQueue[i], shuffledQueue[j] = shuffledQueue[j], shuffledQueue[i]
 	})
 

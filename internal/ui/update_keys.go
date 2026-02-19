@@ -3,7 +3,6 @@ package ui
 import (
 	"math/rand"
 	"strings"
-	"time"
 
 	"github.com/MattiaPun/SubTUI/v2/internal/api"
 	"github.com/MattiaPun/SubTUI/v2/internal/integration"
@@ -869,8 +868,7 @@ func mediaShuffle(m model) model {
 			currentSongID = m.queue[m.queueIndex].ID
 		}
 
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		r.Shuffle(len(m.queue), func(i, j int) {
+		rand.Shuffle(len(m.queue), func(i, j int) {
 			m.queue[i], m.queue[j] = m.queue[j], m.queue[i]
 		})
 
