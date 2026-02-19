@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// Helper: Generate a random salt
 func generateSalt() string {
 	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 	b := make([]byte, 6)
@@ -23,6 +24,7 @@ func generateSalt() string {
 	return string(b)
 }
 
+// Helper: Compose the needed parameters
 func getAuthParams() url.Values {
 	salt := generateSalt()
 	hash := md5.Sum([]byte(AppServerConfig.Server.Password + salt))
@@ -39,6 +41,28 @@ func getAuthParams() url.Values {
 	return v
 }
 
+// Helper: Redact sensitive parameters for debug log
+func redactURL(rawUrl string) string {
+	parsed, err := url.Parse(rawUrl)
+	if err != nil {
+		return "<redacted_url>"
+	}
+
+	q := parsed.Query()
+	if _, ok := q["t"]; ok {
+		q.Set("t", "<REDACTED>")
+	}
+	if _, ok := q["s"]; ok {
+		q.Set("s", "<REDACTED>")
+	}
+	if _, ok := q["p"]; ok {
+		q.Set("p", "<REDACTED>")
+	}
+
+	parsed.RawQuery = q.Encode()
+	return parsed.String()
+}
+
 func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, error) {
 	baseUrl := AppServerConfig.Server.URL + "/rest" + endpoint
 
@@ -50,7 +74,7 @@ func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, 
 
 	fullUrl := baseUrl + "?" + v.Encode()
 
-	log.Printf("[API] Request: %s", fullUrl)
+	log.Printf("[API] Request: %s", redactURL(fullUrl))
 	resp, err := http.Get(fullUrl)
 	if err != nil {
 		log.Printf("[API] Connection Failed: %v", err)
@@ -59,7 +83,7 @@ func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("[API] HTTP Error: %d | URL: %s", resp.StatusCode, fullUrl)
+		log.Printf("[API] HTTP Error: %d | URL: %s", resp.StatusCode, redactURL(fullUrl))
 		return nil, fmt.Errorf("server error (HTTP %d)", resp.StatusCode)
 	}
 
