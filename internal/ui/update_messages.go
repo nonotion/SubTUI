@@ -173,7 +173,7 @@ func (m model) handleLoginResult(msg loginResultMsg) (tea.Model, tea.Cmd) {
 	}
 
 	m.viewMode = viewList
-	m.focus = focusMain
+	m.focus = focusSearch
 	m.loginErr = ""
 
 	return m, tea.Batch(
