@@ -43,6 +43,7 @@ var rootProps = map[string]*prop.Prop{
 
 func (m Metadata) ToMap() map[string]interface{} {
 	return map[string]interface{}{
+		"mpris:trackid":     dbus.ObjectPath("/org/mpris/MediaPlayer2/TrackList/NoTrack"),
 		"mpris:length":      m.LengthInMicroseconds(),
 		"xesam:title":       m.Title,
 		"xesam:artist":      []string{m.Artist},
