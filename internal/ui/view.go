@@ -424,7 +424,7 @@ func mainSongsContent(m model, mainWidth int, mainHeight int) string {
 		id := fmt.Sprintf("mainview_item_%d", i)
 		row = zone.Mark(id, style.Render(row))
 
-		mainContent += fmt.Sprintf("%s%s\n", cursor, style.Render(row))
+		mainContent += fmt.Sprintf("%s%s\n", cursor, row)
 	}
 
 	return mainContent
