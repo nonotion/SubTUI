@@ -208,7 +208,7 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 			m.dbusInstance.ClearMetadata()
 		}
 
-		return m, syncPlayerCmd()
+		return m, tea.Batch(syncPlayerCmd(), tea.SetWindowTitle("SubTUI"))
 	}
 
 	if len(m.queue) > 0 {
