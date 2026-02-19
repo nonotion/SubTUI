@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -190,6 +191,16 @@ func LoadConfig() error {
 		return fmt.Errorf("could not decode default server config: %v", err)
 	}
 
+	// Load configs into variables
+	var userConfig Config
+	var userServerConfig ServerConfig
+	if err := toml.Unmarshal(configFile, &userConfig); err != nil {
+		return fmt.Errorf("could not decode user config: %v", err)
+	}
+	if err := toml.Unmarshal(serverConfigFile, &userServerConfig); err != nil {
+		return fmt.Errorf("could not decode user server config: %v", err)
+	}
+
 	// Overwrite config values with user custom values
 	if err := toml.Unmarshal(configFile, &AppConfig); err != nil {
 		return fmt.Errorf("could not decode user config: %v", err)
@@ -198,9 +209,14 @@ func LoadConfig() error {
 		return fmt.Errorf("could not decode user server config: %v", err)
 	}
 
-	// save updated config file
-	if err := SaveConfig(); err != nil {
-		log.Printf("Warning: failed to migrate config files with new defaults: %v", err)
+	configChanged := !reflect.DeepEqual(userConfig, AppConfig)
+	serverConfigChanged := !reflect.DeepEqual(userServerConfig, AppServerConfig)
+
+	// Save if keys were actually added/changed
+	if configChanged || serverConfigChanged {
+		if err := SaveConfig(); err != nil {
+			log.Printf("Warning: failed to migrate config files with new defaults: %v", err)
+		}
 	}
 
 	return nil
