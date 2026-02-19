@@ -182,12 +182,25 @@ func LoadConfig() error {
 		return fmt.Errorf("could not open config file: %v", err)
 	}
 
-	// Process config files
+	// Load default config values
+	if err := toml.Unmarshal(defaultConfig, &AppConfig); err != nil {
+		return fmt.Errorf("could not decode default config: %v", err)
+	}
+	if err := toml.Unmarshal(defaultServerConfig, &AppServerConfig); err != nil {
+		return fmt.Errorf("could not decode default server config: %v", err)
+	}
+
+	// Overwrite config values with user custom values
 	if err := toml.Unmarshal(configFile, &AppConfig); err != nil {
-		return fmt.Errorf("could not decode config: %v", err)
+		return fmt.Errorf("could not decode user config: %v", err)
 	}
 	if err := toml.Unmarshal(serverConfigFile, &AppServerConfig); err != nil {
-		return fmt.Errorf("could not decode server config: %v", err)
+		return fmt.Errorf("could not decode user server config: %v", err)
+	}
+
+	// save updated config file
+	if err := SaveConfig(); err != nil {
+		log.Printf("Warning: failed to migrate config files with new defaults: %v", err)
 	}
 
 	return nil
