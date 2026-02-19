@@ -22,10 +22,22 @@ var (
 	popupStyle        lipgloss.Style
 )
 
+func checkColors(colors []string) lipgloss.AdaptiveColor {
+	if len(colors) == 0 {
+		return lipgloss.AdaptiveColor{}
+	}
+
+	if len(colors) == 1 {
+		return lipgloss.AdaptiveColor{Light: colors[0], Dark: colors[0]}
+	}
+
+	return lipgloss.AdaptiveColor{Light: colors[0], Dark: colors[1]}
+}
+
 func InitStyles() {
-	Theme.Subtle = lipgloss.AdaptiveColor{Light: api.AppConfig.Theme.Subtle[0], Dark: api.AppConfig.Theme.Subtle[1]}
-	Theme.Highlight = lipgloss.AdaptiveColor{Light: api.AppConfig.Theme.Highlight[0], Dark: api.AppConfig.Theme.Highlight[1]}
-	Theme.Special = lipgloss.AdaptiveColor{Light: api.AppConfig.Theme.Special[0], Dark: api.AppConfig.Theme.Special[1]}
+	Theme.Subtle = checkColors(api.AppConfig.Theme.Subtle)
+	Theme.Highlight = checkColors(api.AppConfig.Theme.Highlight)
+	Theme.Special = checkColors(api.AppConfig.Theme.Special)
 
 	// Global Borders
 	borderStyle = lipgloss.NewStyle().
