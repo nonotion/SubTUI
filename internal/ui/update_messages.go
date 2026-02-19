@@ -444,6 +444,13 @@ func (m model) handleIntegrationPlayPause(msg integration.PlayPauseMsg) (tea.Mod
 	return m, nil
 }
 
+func (m model) handleIntegrationStop() (tea.Model, tea.Cmd) {
+	m.queue = nil
+	player.Stop()
+
+	return m, nil
+}
+
 func (m model) handleIntegrationNextSong(msg integration.NextSongMsg) (tea.Model, tea.Cmd) {
 	return mediaSongSkip(m, msg)
 }

@@ -129,6 +129,14 @@ func TogglePause() {
 	_ = mpvClient.SetProperty("pause", !status)
 }
 
+func Stop() {
+	if mpvClient == nil {
+		return
+	}
+
+	_ = mpvClient.Stop()
+}
+
 func RestartSong() {
 	_ = mpvClient.Seek(-int(mpvClient.Position()))
 

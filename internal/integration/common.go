@@ -19,6 +19,7 @@ const (
 )
 
 type PlayPauseMsg struct{}
+type StopMsg struct{}
 type NextSongMsg struct{}
 type PreviousSongMsg struct{}
 

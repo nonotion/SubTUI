@@ -48,7 +48,7 @@ func (m *MediaPlayer2) Previous() *dbus.Error {
 
 func (m *MediaPlayer2) Stop() *dbus.Error {
 	if m.Program != nil {
-		m.Program.Send(PlayPauseMsg{})
+		m.Program.Send(StopMsg{})
 	}
 	return nil
 }
