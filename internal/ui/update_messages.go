@@ -197,6 +197,8 @@ func (m model) handleErr(msg errMsg) (tea.Model, tea.Cmd) {
 
 func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 	m.playerStatus = player.PlayerStatus(msg)
+	var cmds []tea.Cmd
+	cmds = append(cmds, syncPlayerCmd())
 
 	if m.playerStatus.Path == "" || m.playerStatus.Path == "<nil>" || len(m.queue) == 0 {
 
@@ -254,6 +256,9 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 			if m.discordRPC && m.discordInstance != nil {
 				m.discordInstance.UpdateActivity(metadata)
 			}
+
+			windowTitle := fmt.Sprintf("%s - %s", metadata.Title, metadata.Artist)
+			cmds = append(cmds, tea.SetWindowTitle(windowTitle))
 		}
 	}
 
@@ -309,12 +314,7 @@ func (m model) handleStatus(msg statusMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	windowTitle := "SubTUI"
-	if m.playerStatus.Title != "" && m.playerStatus.Title != "<nil>" && !strings.Contains(m.playerStatus.Title, "stream?c=SubTUI") {
-		windowTitle = fmt.Sprintf("%s - %s", m.playerStatus.Title, m.playerStatus.Artist)
-	}
-
-	return m, tea.Batch(syncPlayerCmd(), tea.SetWindowTitle(windowTitle))
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) handleSongResult(msg songsResultMsg) (tea.Model, tea.Cmd) {
