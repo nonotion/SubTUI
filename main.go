@@ -82,6 +82,7 @@ func main() {
 
 	discordIns := integration.InitDiscord()
 	if discordIns != nil {
+		defer discordIns.Close()
 		go p.Send(ui.SetDiscordMsg{Instance: discordIns})
 	}
 

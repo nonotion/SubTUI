@@ -20,6 +20,10 @@ func InitDiscord() *DiscordInstance {
 	return &DiscordInstance{Connected: true}
 }
 
+func (ins *DiscordInstance) Close() {
+	client.Logout()
+}
+
 func (ins *DiscordInstance) UpdateActivity(meta Metadata) {
 	now := time.Now()
 
