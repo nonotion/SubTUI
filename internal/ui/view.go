@@ -329,7 +329,7 @@ func sidebarContent(m model, mainHeight int, sidebarWidth int) string {
 		currentLine++
 	}
 
-	return zone.Mark("id_sidebar", content)
+	return content
 }
 
 func mainSongsContent(m model, mainWidth int, mainHeight int) string {
