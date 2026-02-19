@@ -2,12 +2,12 @@ package api
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -16,12 +16,14 @@ import (
 
 // Helper: Generate a random salt
 func generateSalt() string {
-	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
-	b := make([]byte, 6)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
+	b := make([]byte, 8)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
 	}
-	return string(b)
+
+	return hex.EncodeToString(b)
 }
 
 // Helper: Compose the needed parameters
