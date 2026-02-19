@@ -102,9 +102,9 @@ func getSelectedSongs(m model) []api.Song {
 	if m.focus == focusMain {
 		switch m.viewMode {
 		case viewList:
-			if m.displayMode == displaySongs && len(m.songs) > 0 {
+			if m.displayMode == displaySongs && cursorInBounds(m) {
 				return []api.Song{m.songs[m.cursorMain]}
-			} else if m.displayMode == displayAlbums || m.displayMode == displayArtist {
+			} else if m.displayMode == displayAlbums {
 				songs, err := api.SubsonicGetAlbum(m.albums[m.cursorMain].ID)
 				if err != nil {
 					return []api.Song{}
@@ -112,7 +112,7 @@ func getSelectedSongs(m model) []api.Song {
 				return songs
 			}
 		case viewQueue:
-			if len(m.queue) > 0 {
+			if len(m.queue) > 0 && m.cursorMain < len(m.queue) {
 				return []api.Song{m.queue[m.cursorMain]}
 			}
 		}

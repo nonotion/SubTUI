@@ -380,7 +380,7 @@ func enter(m model) (tea.Model, tea.Cmd) {
 func playShuffeled(m model) (tea.Model, tea.Cmd) {
 	switch m.focus {
 	case focusMain:
-		if m.displayMode == displayAlbums && m.cursorMain <= len(m.albums) && (m.albums[m.cursorMain]).ID != "" {
+		if m.displayMode == displayAlbums && m.cursorMain < len(m.albums) && (m.albums[m.cursorMain]).ID != "" {
 			m.loading = true
 
 			return m, getAlbumSongs(m.albums[m.cursorMain].ID, true)
@@ -711,7 +711,7 @@ func mediaVolumeDown(m model, _ tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func mediaQueueNext(m model) model {
-	if m.focus == focusMain {
+	if m.focus == focusMain && (m.displayMode == displaySongs || m.displayMode == displayAlbums) {
 		selectedSongs := getSelectedSongs(m)
 
 		if selectedSongs != nil {
@@ -737,7 +737,7 @@ func mediaQueueNext(m model) model {
 }
 
 func mediaQueueLast(m model) model {
-	if m.focus == focusMain {
+	if m.focus == focusMain && (m.displayMode == displaySongs || m.displayMode == displayAlbums) {
 		selectedSongs := getSelectedSongs(m)
 
 		if selectedSongs != nil {
@@ -1098,6 +1098,10 @@ func playlistsMenu(key string, m model) (model, tea.Cmd) {
 		return m, nil
 	}
 
+	if len(m.playlists) == 0 {
+		return m, nil
+	}
+
 	if keyMatches(key, api.AppConfig.Keybinds.Navigation.Up) {
 		if m.cursorPopup > 0 {
 			m.cursorPopup--
@@ -1107,9 +1111,11 @@ func playlistsMenu(key string, m model) (model, tea.Cmd) {
 			m.cursorPopup++
 		}
 	} else if keyMatches(key, api.AppConfig.Keybinds.Navigation.Select) {
-		if m.viewMode == viewList {
+		inBounds := cursorInBounds(m)
+
+		if m.viewMode == viewList && inBounds {
 			cmd = addSongToPlaylistCmd(m.songs[m.cursorMain].ID, m.playlists[m.cursorPopup].ID)
-		} else {
+		} else if m.viewMode == viewQueue && inBounds {
 			cmd = addSongToPlaylistCmd(m.queue[m.cursorMain].ID, m.playlists[m.cursorPopup].ID)
 		}
 		m.showPlaylists = !m.showPlaylists
@@ -1132,17 +1138,23 @@ func ratingMenu(key string, m model) (model, tea.Cmd) {
 	} else if keyMatches(key, api.AppConfig.Keybinds.Navigation.Down) && m.cursorPopup < 5 {
 		m.cursorPopup++
 	} else if keyMatches(key, api.AppConfig.Keybinds.Navigation.Select) {
+		inBounds := cursorInBounds(m)
+
 		switch m.displayMode {
 		case displaySongs:
-			if m.viewMode == viewList {
+			if m.viewMode == viewList && inBounds {
 				cmd = addRatingCmd(m.songs[m.cursorMain].ID, m.cursorPopup)
-			} else {
+			} else if m.viewMode == viewQueue && inBounds {
 				cmd = addRatingCmd(m.queue[m.cursorMain].ID, m.cursorPopup)
 			}
 		case displayAlbums:
-			cmd = addRatingCmd(m.albums[m.cursorMain].ID, m.cursorPopup)
+			if inBounds {
+				cmd = addRatingCmd(m.albums[m.cursorMain].ID, m.cursorPopup)
+			}
 		case displayArtist:
-			cmd = addRatingCmd(m.artists[m.cursorMain].ID, m.cursorPopup)
+			if inBounds {
+				cmd = addRatingCmd(m.artists[m.cursorMain].ID, m.cursorPopup)
+			}
 		}
 		m.cursorPopup = 0
 		m.showRating = !m.showRating
@@ -1184,4 +1196,25 @@ func loadMore(m model) (model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func cursorInBounds(m model) bool {
+	switch m.displayMode {
+	case displaySongs:
+		switch m.viewMode {
+		case viewList:
+			return m.cursorMain >= 0 && m.cursorMain < len(m.songs)
+
+		case viewQueue:
+			return m.cursorMain >= 0 && m.cursorMain < len(m.queue)
+		}
+
+	case displayAlbums:
+		return m.cursorMain >= 0 && m.cursorMain < len(m.albums)
+
+	case displayArtist:
+		return m.cursorMain >= 0 && m.cursorMain < len(m.artists)
+	}
+
+	return false
 }
