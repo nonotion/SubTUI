@@ -23,6 +23,7 @@ var AppServerConfig ServerConfig
 type Config struct {
 	App      App      `toml:"app"`
 	Theme    Theme    `toml:"theme"`
+	Filters  Filters  `toml:"filters"`
 	Keybinds Keybinds `toml:"keybinds"`
 }
 
@@ -52,6 +53,19 @@ type Theme struct {
 	Subtle    []string `toml:"subtle"`
 	Highlight []string `toml:"highlight"`
 	Special   []string `toml:"special"`
+}
+
+type Filters struct {
+	Titles           []string `toml:"titles"`
+	Artists          []string `toml:"artists"`
+	AlbumArtists     []string `toml:"album_artists"`
+	MinDuration      int      `toml:"min_duration"`
+	Genres           []string `toml:"genres"`
+	Notes            []string `toml:"notes"`
+	Paths            []string `toml:"paths"`
+	MaxPlayCount     int      `toml:"max_play_count"`
+	ExcludeFavorites bool     `toml:"exclude_favorites"`
+	MaxRating        int      `toml:"max_rating"`
 }
 
 type Keybinds struct {

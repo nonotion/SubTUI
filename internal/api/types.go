@@ -70,14 +70,20 @@ type Album struct {
 }
 
 type Song struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	Artist   string `json:"artist"`
-	ArtistID string `json:"artistId"`
-	Album    string `json:"album"`
-	AlbumID  string `json:"albumId"`
-	Duration int    `json:"duration"`
-	Rating   int    `json:"userRating"`
+	ID           string   `json:"id"`
+	Title        string   `json:"title"`
+	Artist       string   `json:"artist"`
+	ArtistID     string   `json:"artistId"`
+	AlbumArtists []Artist `json:"albumArtists"`
+	Album        string   `json:"album"`
+	AlbumID      string   `json:"albumId"`
+	Duration     int      `json:"duration"`
+	Rating       int      `json:"userRating"`
+	Genre        string   `json:"genre"`
+	Year         int      `json:"year"`
+	Note         string   `json:"comment"`
+	Path         string   `json:"path"`
+	PlayCount    int      `json:"playCount"`
 }
 
 type Playlist struct {
