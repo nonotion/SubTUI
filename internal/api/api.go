@@ -49,6 +49,10 @@ func getAuthParams() url.Values {
 
 // Helper: Redact sensitive parameters for debug log
 func redactURL(rawUrl string) string {
+	if !AppServerConfig.Security.RedactCredentialsInLogs {
+		return rawUrl
+	}
+
 	parsed, err := url.Parse(rawUrl)
 	if err != nil {
 		return "<redacted_url>"

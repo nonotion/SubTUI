@@ -27,13 +27,18 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Server Server `toml:"server"`
+	Server   Server   `toml:"server"`
+	Security Security `toml:"security"`
 }
 
 type Server struct {
 	URL      string `toml:"url"`
 	Username string `toml:"username"`
 	Password string `toml:"password"`
+}
+
+type Security struct {
+	RedactCredentialsInLogs bool `toml:"redact_credentials_in_logs"`
 }
 
 type App struct {
