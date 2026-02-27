@@ -7,7 +7,7 @@ import (
 
 func attemptLoginCmd() tea.Cmd {
 	return func() tea.Msg {
-		if err := api.SaveConfig(); err != nil {
+		if err := api.SaveConfig(api.GetConfigPath("credentials.toml"), api.AppServerConfig, 0600); err != nil {
 			return loginResultMsg{err: err}
 		}
 

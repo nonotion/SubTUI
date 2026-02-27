@@ -2,7 +2,6 @@ package api
 
 import (
 	_ "embed"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -144,7 +143,7 @@ type OtherKeybinds struct {
 	CreateShareLink     []string `toml:"create_share_link"`
 }
 
-func getConfigPath(configName string) string {
+func GetConfigPath(configName string) string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return ""
@@ -172,12 +171,12 @@ func createDefaultConfig(path string, content []byte, label string, permissions 
 
 func LoadConfig() error {
 	// Get config paths
-	configPath := getConfigPath("config.toml")
+	configPath := GetConfigPath("config.toml")
 	if configPath == "" {
 		return fmt.Errorf("could not determine config path")
 	}
-	serverConfigPath := getConfigPath("credentials.toml")
-	if serverConfigPath == "" {
+	credentialsConfigPath := GetConfigPath("credentials.toml")
+	if credentialsConfigPath == "" {
 		return fmt.Errorf("could not determine server config path")
 	}
 
@@ -187,8 +186,8 @@ func LoadConfig() error {
 			return fmt.Errorf("failed to create default config: %w", err)
 		}
 	}
-	if _, err := os.Stat(serverConfigPath); os.IsNotExist(err) {
-		if err := createDefaultConfig(serverConfigPath, defaultServerConfig, "server", 0600); err != nil {
+	if _, err := os.Stat(credentialsConfigPath); os.IsNotExist(err) {
+		if err := createDefaultConfig(credentialsConfigPath, defaultServerConfig, "server", 0600); err != nil {
 			return fmt.Errorf("failed to create default credential config: %w", err)
 		}
 	}
@@ -198,7 +197,7 @@ func LoadConfig() error {
 	if err != nil {
 		return fmt.Errorf("could not open config file: %v", err)
 	}
-	serverConfigFile, err := os.ReadFile(serverConfigPath)
+	serverConfigFile, err := os.ReadFile(credentialsConfigPath)
 	if err != nil {
 		return fmt.Errorf("could not open config file: %v", err)
 	}
@@ -233,44 +232,37 @@ func LoadConfig() error {
 	serverConfigChanged := !reflect.DeepEqual(userServerConfig, AppServerConfig)
 
 	// Save if keys were actually added/changed
-	if configChanged || serverConfigChanged {
-		if err := SaveConfig(); err != nil {
-			log.Printf("Warning: failed to migrate config files with new defaults: %v", err)
+	if configChanged {
+		if err := SaveConfig(configPath, AppConfig, 0644); err != nil {
+			log.Printf("Warning: failed to migrate config file with new defaults: %v", err)
+		}
+	}
+
+	if serverConfigChanged {
+		if err := SaveConfig(credentialsConfigPath, AppServerConfig, 0600); err != nil {
+			log.Printf("Warning: failed to migrate credential file with new defaults: %v", err)
 		}
 	}
 
 	return nil
 }
 
-func SaveConfig() error {
-	// Get config paths
-	configPath := getConfigPath("config.toml")
-	if configPath == "" {
-		return fmt.Errorf("could not determine config path")
-	}
-	serverConfigPath := getConfigPath("credentials.toml")
-	if serverConfigPath == "" {
-		return fmt.Errorf("could not determine server config path")
+func SaveConfig(path string, data any, perms os.FileMode) error {
+	if path == "" {
+		return fmt.Errorf("could not determine path")
 	}
 
 	// Create config dir
-	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
 
-	// Process configs
-	configData, err := toml.Marshal(AppConfig)
-	if err != nil {
-		return err
-	}
-	serverConfigData, err := toml.Marshal(AppServerConfig)
+	// Process config
+	tomlData, err := toml.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	// Write configs
-	return errors.Join(
-		os.WriteFile(configPath, configData, 0644),
-		os.WriteFile(serverConfigPath, serverConfigData, 0600),
-	)
+	// Write config
+	return os.WriteFile(path, tomlData, perms)
 }
