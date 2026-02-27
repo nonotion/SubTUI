@@ -321,15 +321,17 @@ func (m model) handleSongResult(msg songsResultMsg) (tea.Model, tea.Cmd) {
 	m.loading = false
 	m.focus = focusMain
 
+	songs := applyExclusionFilters(m, msg.songs)
+
 	if m.pageOffset > 0 { // Append: paging
 		m.songs = append(m.songs, msg.songs...)
 	} else { // Replace: no paging
-		m.songs = msg.songs
+		m.songs = songs
 		m.cursorMain = 0
 		m.mainOffset = 0
 	}
 
-	m.pageHasMore = (len(msg.songs) == 150)
+	m.pageHasMore = (len(songs) == 150)
 
 	return m, nil
 }
@@ -397,8 +399,17 @@ func (m model) handleShuffledSongs(msg shuffledSongsMsg) (tea.Model, tea.Cmd) {
 		m.songs = msg.songs
 	}
 
-	shuffledQueue := make([]api.Song, len(msg.songs))
-	copy(shuffledQueue, msg.songs)
+	songs := applyExclusionFilters(m, msg.songs)
+
+	var filteredSongs []api.Song
+	for _, song := range songs {
+		if !song.Filtered {
+			filteredSongs = append(filteredSongs, song)
+		}
+	}
+
+	shuffledQueue := make([]api.Song, len(filteredSongs))
+	copy(shuffledQueue, filteredSongs)
 
 	rand.Shuffle(len(shuffledQueue), func(i, j int) {
 		shuffledQueue[i], shuffledQueue[j] = shuffledQueue[j], shuffledQueue[i]
